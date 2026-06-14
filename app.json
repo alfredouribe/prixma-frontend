@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Prixma",
+    "slug": "prixma",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "prixma",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.prixma.mobile"
+    },
+    "android": {
+      "package": "app.prixma.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0d0d14",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Prixma necesita tu ubicación para mostrarte personas cercanas."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
