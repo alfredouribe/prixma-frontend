@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useAuthStore } from '../src/stores/authStore';
+import { authService } from '../src/features/auth/services/authService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,13 +15,32 @@ export default function RootLayout() {
     'PoppinsRounded-Bold':     require('../brand/assets/fonts/Poppins/Poppins-Bold.ttf'),
   });
 
+  const [authReady, setAuthReady] = useState(false);
+  const { restoreAuth, setAuth } = useAuthStore();
+
   useEffect(() => {
-    if (fontsLoaded) {
+    async function bootstrap() {
+      const token = await restoreAuth();
+      if (token) {
+        try {
+          const user = await authService.getMe();
+          await setAuth(user, token);
+        } catch {
+          // Token inválido o expirado — se queda en (auth)
+        }
+      }
+      setAuthReady(true);
+    }
+    bootstrap();
+  }, []);
+
+  useEffect(() => {
+    if (fontsLoaded && authReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, authReady]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || !authReady) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

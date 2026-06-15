@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { useAuthStore } from '../stores/authStore';
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -18,7 +19,7 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync('auth_token');
+      await useAuthStore.getState().clearAuth();
     }
     return Promise.reject(error);
   },
