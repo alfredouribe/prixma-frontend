@@ -15,12 +15,14 @@ import { useRegister } from '../hooks/useRegister';
 import { colors, surfaces, text, spacing, typography } from '../../../lib/theme';
 import type { RegisterFormData } from '../schemas/registerSchema';
 import type { RegisterPayload } from '../types/auth.types';
+import type { UseFormSetError } from 'react-hook-form';
+
 
 export function RegisterScreen() {
   const router = useRouter();
   const { handleRegister, isLoading, error } = useRegister();
 
-  function onSubmit(data: RegisterFormData) {
+  function onSubmit(data: RegisterFormData, setFieldError: UseFormSetError<RegisterFormData>) {
     const payload: RegisterPayload = {
       email: data.email,
       password: data.password,
@@ -29,7 +31,7 @@ export function RegisterScreen() {
       terms_accepted: data.terms_accepted,
       privacy_accepted: data.privacy_accepted,
     };
-    handleRegister(payload);
+    handleRegister(payload, setFieldError);
   }
 
   return (
@@ -82,6 +84,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xl,

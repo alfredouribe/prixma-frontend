@@ -5,5 +5,6 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@expo/vector-icons(.*)$': '<rootDir>/__mocks__/@expo/vector-icons.tsx',
+    '^@brand/(.*)$': '<rootDir>/brand/$1',
   },
 };

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, UseFormSetError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterFormData } from '../schemas/registerSchema';
 import { AuthInput } from './AuthInput';
@@ -9,7 +9,7 @@ import { AgeInput } from './AgeInput';
 import { text, spacing, typography } from '../../../lib/theme';
 
 interface RegisterFormProps {
-  onSubmit: (data: RegisterFormData) => void;
+  onSubmit: (data: RegisterFormData, setError: UseFormSetError<RegisterFormData>) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -18,6 +18,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
   const {
     control,
     handleSubmit,
+    setError,
     watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
@@ -144,7 +145,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
 
       <AuthButton
         label="Crear mi cuenta"
-        onPress={handleSubmit(onSubmit)}
+        onPress={handleSubmit((data) => onSubmit(data, setError))}
         isLoading={isLoading}
         disabled={submitDisabled}
         testID="submit-button"

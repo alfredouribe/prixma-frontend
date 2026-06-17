@@ -1,7 +1,15 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { colors, surfaces, text, spacing, radius, typography } from '../../../lib/theme';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import {
+  colors,
+  surfaces,
+  text,
+  spacing,
+  radius,
+  typography,
+} from "../../../lib/theme";
+import { brandAssets } from "../../../lib/brandAssets";
 
 export function SplashScreen() {
   const router = useRouter();
@@ -11,21 +19,25 @@ export function SplashScreen() {
       <View style={styles.center}>
         <View style={styles.logoGlow}>
           <Image
-            source={require('../../../../assets/icon.png')}
+            source={brandAssets.logo.color}
             style={styles.logo}
             resizeMode="contain"
           />
         </View>
 
         <Text style={styles.appName}>Prixma</Text>
-        <Text style={styles.tagline}>Conexiones reales, sin pedir permiso.</Text>
+        <Text style={styles.tagline}>
+          Conexiones reales, sin pedir permiso.
+        </Text>
 
         <View style={styles.pills}>
-          {['Identidades verificadas', 'Sé tú misme', 'Espacio seguro'].map((pill) => (
-            <View key={pill} style={styles.pill}>
-              <Text style={styles.pillText}>{pill}</Text>
-            </View>
-          ))}
+          {["Identidades verificadas", "Sé tú misme", "Espacio seguro"].map(
+            (pill) => (
+              <View key={pill} style={styles.pill}>
+                <Text style={styles.pillText}>{pill}</Text>
+              </View>
+            ),
+          )}
         </View>
 
         <Text style={styles.socialProof}>+12,000 personas ya están aquí</Text>
@@ -34,7 +46,7 @@ export function SplashScreen() {
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => router.push('/(auth)/register')}
+          onPress={() => router.push("/(auth)/register")}
           activeOpacity={0.85}
         >
           <Text style={styles.primaryButtonText}>Quiero crear mi perfil</Text>
@@ -42,7 +54,7 @@ export function SplashScreen() {
 
         <TouchableOpacity
           style={styles.secondaryButton}
-          onPress={() => router.push('/(auth)/login')}
+          onPress={() => router.push("/(auth)/login")}
           activeOpacity={0.85}
         >
           <Text style={styles.secondaryButtonText}>Ya tengo cuenta</Text>
@@ -56,26 +68,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: surfaces.bg,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxl,
   },
   center: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoGlow: {
     width: 120,
     height: 120,
     borderRadius: radius.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: spacing.xl,
-    shadowColor: colors.purple,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    elevation: 12,
+    shadowOpacity: 0.6,
+    shadowRadius: 28,
+    elevation: 16,
   },
   logo: {
     width: 120,
@@ -90,13 +101,13 @@ const styles = StyleSheet.create({
   tagline: {
     ...typography.body,
     color: text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: spacing.xl,
   },
   pills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: spacing.sm,
     marginBottom: spacing.xl,
   },
@@ -111,12 +122,12 @@ const styles = StyleSheet.create({
   pillText: {
     ...typography.small,
     color: colors.purple,
-    fontFamily: 'PoppinsRounded-Medium',
+    fontFamily: "PoppinsRounded-Medium",
   },
   socialProof: {
     ...typography.small,
     color: text.tertiary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   actions: {
     gap: spacing.md,
@@ -125,8 +136,8 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 14,
     backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButtonText: {
     ...typography.button,
@@ -137,8 +148,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonText: {
     ...typography.button,

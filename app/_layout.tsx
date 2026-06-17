@@ -9,10 +9,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'PoppinsRounded-Regular':  require('../brand/assets/fonts/Poppins/Poppins-Regular.ttf'),
-    'PoppinsRounded-Medium':   require('../brand/assets/fonts/Poppins/Poppins-Medium.ttf'),
-    'PoppinsRounded-SemiBold': require('../brand/assets/fonts/Poppins/Poppins-SemiBold.ttf'),
-    'PoppinsRounded-Bold':     require('../brand/assets/fonts/Poppins/Poppins-Bold.ttf'),
+    'PoppinsRounded-Regular':  require('../assets/fonts/Poppins-Regular.ttf'),
+    'PoppinsRounded-Medium':   require('../assets/fonts/Poppins-Medium.ttf'),
+    'PoppinsRounded-SemiBold': require('../assets/fonts/Poppins-SemiBold.ttf'),
+    'PoppinsRounded-Bold':     require('../assets/fonts/Poppins-Bold.ttf'),
   });
 
   const [authReady, setAuthReady] = useState(false);

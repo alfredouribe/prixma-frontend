@@ -22,11 +22,22 @@ function computeAge(dateString: string): number {
   return age;
 }
 
+function applyDateMask(input: string): string {
+  const digits = input.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+}
+
 export function AgeInput({ value, onChange, onBlur, error }: AgeInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   const age = value ? computeAge(value) : -1;
   const showAgeWarning = age >= 0 && age < 18 && !error;
+
+  function handleChangeText(raw: string) {
+    onChange(applyDateMask(raw));
+  }
 
   return (
     <View style={styles.wrapper}>
@@ -41,7 +52,7 @@ export function AgeInput({ value, onChange, onBlur, error }: AgeInputProps) {
         <Ionicons name="calendar-outline" size={18} color={text.tertiary} style={styles.icon} />
         <TextInput
           value={value}
-          onChangeText={onChange}
+          onChangeText={handleChangeText}
           onFocus={() => setIsFocused(true)}
           onBlur={() => {
             setIsFocused(false);

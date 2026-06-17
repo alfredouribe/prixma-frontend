@@ -84,6 +84,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xl,
