@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { UseFormSetError } from 'react-hook-form';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../../stores/authStore';
@@ -23,11 +22,7 @@ export function useRegister() {
     try {
       const { user, token } = await authService.register(payload);
       await setAuth(user, token);
-      Alert.alert(
-        '¡Cuenta creada!',
-        `Bienvenide a Prixma, ${user.email}.`,
-        [{ text: 'Continuar', onPress: () => router.replace('/(app)') }],
-      );
+      router.replace('/(onboarding)/identity');
     } catch (err) {
       const fieldErrors = extractFieldErrors(err);
       if (fieldErrors) {

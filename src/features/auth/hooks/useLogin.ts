@@ -17,7 +17,7 @@ export function useLogin() {
     try {
       const { user, token } = await authService.login(payload);
       await setAuth(user, token);
-      router.replace('/(app)');
+      router.replace(user.onboarding_completed ? '/(app)' : '/(onboarding)/identity');
     } catch (err) {
       setError(extractApiError(err, 'Correo o contraseña incorrectos. Intenta de nuevo.'));
     } finally {
