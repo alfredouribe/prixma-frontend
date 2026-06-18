@@ -93,10 +93,11 @@ const styles = StyleSheet.create({
     height: 120,
   },
   appName: {
-    ...typography.h1,
+    fontFamily: 'PoppinsRounded-Bold',
+    fontSize: 36,
+    lineHeight: 44,
     color: colors.purple,
     marginBottom: spacing.sm,
-    fontSize: 36,
   },
   tagline: {
     ...typography.body,
