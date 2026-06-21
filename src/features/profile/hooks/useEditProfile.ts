@@ -1,0 +1,124 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { useRouter } from 'expo-router';
+import { profileService } from '../services/profileService';
+import { editProfileSchema, type EditProfileFormData } from '../schemas/editProfileSchema';
+import { extractApiError } from '../../../lib/extractApiError';
+import type { MyProfile, ProfilePhoto } from '../types/profile.types';
+
+export function useEditProfile(initial: MyProfile) {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<ProfilePhoto[]>(initial.photos ?? []);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const form = useForm<EditProfileFormData>({
+    resolver: zodResolver(editProfileSchema),
+    defaultValues: {
+      display_name: initial.display_name,
+      bio: initial.bio ?? '',
+      city: initial.city ?? '',
+      intention: initial.intention ?? undefined,
+      gender_identity_ids: initial.gender_identities?.map((g) => g.id) ?? [],
+      orientation_ids: initial.orientations?.map((o) => o.id) ?? [],
+      pronoun_ids: initial.pronouns?.map((p) => p.id) ?? [],
+      interest_ids: initial.interests?.map((i) => i.id) ?? [],
+      custom_gender_identity: initial.custom_gender_identity ?? '',
+      custom_orientation: initial.custom_orientation ?? '',
+      custom_pronouns: initial.custom_pronouns ?? '',
+      custom_interests: initial.custom_interests ?? '',
+    },
+  });
+
+  async function handleSave(data: EditProfileFormData) {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await profileService.updateProfile(data);
+      router.back();
+    } catch (err) {
+      setSaveError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handlePickPhoto() {
+    if (photos.length >= 6) {
+      setPhotoError('Máximo 6 fotos permitidas.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.85,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setIsUploadingPhoto(true);
+    setPhotoError(null);
+
+    try {
+      const compressed = await manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 1080 } }],
+        { compress: 0.8, format: SaveFormat.JPEG },
+      );
+
+      const photo = await profileService.uploadPhoto(compressed.uri);
+      setPhotos((prev) => [...prev, photo]);
+    } catch (err) {
+      setPhotoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }
+
+  async function handleDeletePhoto(photoId: string) {
+    try {
+      await profileService.deletePhoto(photoId);
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    } catch (err) {
+      setPhotoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    }
+  }
+
+  async function handleReorderPhotos(orderedIds: string[]) {
+    const reordered = orderedIds
+      .map((id, index) => {
+        const photo = photos.find((p) => p.id === id);
+        return photo ? { ...photo, position: index + 1 } : null;
+      })
+      .filter(Boolean) as ProfilePhoto[];
+
+    setPhotos(reordered);
+
+    try {
+      await profileService.reorderPhotos(orderedIds);
+    } catch (err) {
+      setPhotoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    }
+  }
+
+  return {
+    form,
+    handleSave: form.handleSubmit(handleSave),
+    isSaving,
+    saveError,
+    photos,
+    isUploadingPhoto,
+    photoError,
+    handlePickPhoto,
+    handleDeletePhoto,
+    handleReorderPhotos,
+  };
+}

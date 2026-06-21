@@ -1,4 +1,7 @@
-import { Redirect, Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
+import { Redirect } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { colors, surfaces, text, typography } from '../../src/lib/theme';
 import { useAuthStore } from '../../src/stores/authStore';
 
 export default function AppLayout() {
@@ -13,5 +16,62 @@ export default function AppLayout() {
     return <Redirect href="/(onboarding)/identity" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: surfaces.elevated,
+          borderTopColor: surfaces.border,
+          borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarActiveTintColor: colors.purple,
+        tabBarInactiveTintColor: text.tertiary,
+        tabBarLabelStyle: {
+          fontFamily: 'PoppinsRounded-Medium',
+          fontSize: 11,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Discover',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="compass" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explorar',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: 'Chats',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="message-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Mi perfil',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="user" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
 }
