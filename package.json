@@ -16,6 +16,7 @@
     "expo-secure-store": "~15.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-video": "~3.0.16",
     "jest-expo": "~54.0.17",
     "nativewind": "^4.1.23",
     "react": "19.1.0",

@@ -1,32 +1,51 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { onboardingService } from '../services/onboardingService';
 import { extractApiError } from '../../../lib/extractApiError';
 
-type VideoState = 'idle' | 'uploading' | 'done' | 'error';
+type VideoState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
+
+const POLL_INTERVAL_MS = 3000;
 
 export function useStepVideo() {
   const router = useRouter();
   const [videoState, setVideoState] = useState<VideoState>('idle');
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  async function handleVideoSelected(file: Blob) {
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return stopPolling;
+  }, [stopPolling]);
+
+  function startPolling() {
+    pollRef.current = setInterval(async () => {
+      try {
+        const status = await onboardingService.getStatus();
+        if (status.profile?.video_processed) {
+          stopPolling();
+          setVideoState('done');
+        }
+      } catch {
+        // silencioso — el backend puede tardar en responder, seguimos intentando
+      }
+    }, POLL_INTERVAL_MS);
+  }
+
+  async function handleVideoSelected(uri: string, mimeType?: string) {
     setVideoState('uploading');
     setError(null);
-    setUploadProgress(0);
 
     try {
-      const { upload_url, video_key } = await onboardingService.getVideoPresignedUrl();
-
-      setUploadProgress(30);
-      await onboardingService.uploadVideoToS3(upload_url, file);
-
-      setUploadProgress(80);
-      await onboardingService.saveVideo(video_key);
-
-      setUploadProgress(100);
-      setVideoState('done');
+      await onboardingService.uploadVideo(uri, mimeType);
+      setVideoState('processing');
+      startPolling();
     } catch (err) {
       setVideoState('error');
       setError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
@@ -34,6 +53,7 @@ export function useStepVideo() {
   }
 
   function handleSkip() {
+    stopPolling();
     router.push('/(onboarding)/safety');
   }
 
@@ -41,5 +61,5 @@ export function useStepVideo() {
     router.push('/(onboarding)/safety');
   }
 
-  return { videoState, uploadProgress, error, handleVideoSelected, handleSkip, handleContinue };
+  return { videoState, error, handleVideoSelected, handleSkip, handleContinue };
 }

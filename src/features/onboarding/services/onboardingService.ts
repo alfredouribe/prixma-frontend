@@ -1,12 +1,10 @@
 import api from '../../../lib/api';
-import axios from 'axios';
 import type {
   CatalogItem,
   Interest,
   InterestCategory,
   OnboardingStatus,
   Profile,
-  VideoPresignedUrl,
 } from '../types/onboarding.types';
 import type { IdentityFormData } from '../schemas/identitySchema';
 import type { PronounsFormData } from '../schemas/pronounsSchema';
@@ -56,27 +54,25 @@ export const onboardingService = {
     return data.data;
   },
 
-  async saveVideo(videoKey: string): Promise<Profile> {
-    const { data } = await api.post<{ data: Profile }>('/onboarding/step/video', {
-      video_key: videoKey,
+  async uploadVideo(uri: string, mimeType?: string): Promise<void> {
+    const formData = new FormData();
+    formData.append('video', {
+      uri,
+      type: mimeType || 'video/mp4',
+      name: 'video',
+    } as unknown as Blob);
+
+    // React Native genera el Content-Type con el boundary correcto al detectar FormData.
+    // Sobreescribirlo manualmente rompe el parseo multipart en PHP.
+    await api.post('/onboarding/video/upload', formData, {
+      transformRequest: (data, headers) => {
+        delete headers['Content-Type'];
+        return data;
+      },
     });
-    return data.data;
   },
 
   async saveSafety(payload: SafetyFormData): Promise<void> {
     await api.post('/onboarding/step/safety', payload);
-  },
-
-  async getVideoPresignedUrl(): Promise<VideoPresignedUrl> {
-    const { data } = await api.post<{ data: VideoPresignedUrl }>(
-      '/onboarding/video/presigned-url',
-    );
-    return data.data;
-  },
-
-  async uploadVideoToS3(uploadUrl: string, file: Blob): Promise<void> {
-    await axios.put(uploadUrl, file, {
-      headers: { 'Content-Type': file.type || 'video/mp4' },
-    });
   },
 };

@@ -17,14 +17,19 @@ const MAX_SIZE_BYTES = 200 * 1024 * 1024;
 
 export function VideoScreen() {
   const router = useRouter();
-  const { videoState, uploadProgress, error, handleVideoSelected, handleSkip, handleContinue } =
-    useStepVideo();
+  const { videoState, error, handleVideoSelected, handleSkip, handleContinue } = useStepVideo();
 
   async function pickVideo() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'videos',
       allowsEditing: false,
       quality: 1,
+      // TODO: PENDIENTE IMPORTANTE — descomentar para fix de HEVC Dolby Vision
+      // Compatible fuerza a PHPickerViewController a transcodificar formatos
+      // no estándar (HEVC Dolby Vision, ProRes, etc.) antes de devolver el URI.
+      // Sin esto, iOS devuelve un archivo de 0 bytes para esos formatos.
+      // preferredAssetRepresentationMode:
+      //   ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
     });
 
     if (result.canceled || !result.assets[0]) return;
@@ -35,9 +40,7 @@ export function VideoScreen() {
       return;
     }
 
-    const response = await fetch(asset.uri);
-    const blob = await response.blob();
-    handleVideoSelected(blob);
+    handleVideoSelected(asset.uri, asset.mimeType ?? undefined);
   }
 
   return (
@@ -61,7 +64,6 @@ export function VideoScreen() {
 
         <VideoUploader
           state={videoState}
-          progress={uploadProgress}
           error={error}
           onPickFile={pickVideo}
         />
@@ -75,9 +77,9 @@ export function VideoScreen() {
         ) : (
           <>
             <TouchableOpacity
-              style={[styles.button, videoState === 'uploading' && styles.buttonDisabled]}
+              style={[styles.button, (videoState === 'uploading' || videoState === 'processing') && styles.buttonDisabled]}
               onPress={pickVideo}
-              disabled={videoState === 'uploading'}
+              disabled={videoState === 'uploading' || videoState === 'processing'}
               activeOpacity={0.8}
             >
               <Text style={styles.buttonLabel}>Subir desde galería</Text>
@@ -86,7 +88,7 @@ export function VideoScreen() {
             <TouchableOpacity
               style={styles.skipLink}
               onPress={handleSkip}
-              disabled={videoState === 'uploading'}
+              disabled={videoState === 'uploading' || videoState === 'processing'}
               activeOpacity={0.6}
             >
               <Text style={styles.skipText}>Lo hago después</Text>

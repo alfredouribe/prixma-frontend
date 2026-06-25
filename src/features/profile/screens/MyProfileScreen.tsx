@@ -15,6 +15,7 @@ import { ProfileBio } from '../components/ProfileBio';
 import { ProfileInterests } from '../components/ProfileInterests';
 import { PhotoGallery } from '../components/PhotoGallery';
 import { ProfileSettingsMenu } from '../components/ProfileSettingsMenu';
+import { VideoCard } from '../components/VideoCard';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
 export function MyProfileScreen() {
@@ -61,6 +62,17 @@ export function MyProfileScreen() {
         </View>
 
         <ProfileStats stats={profile.statistics} />
+
+        {profile.video_url && profile.video_processed && (
+          <VideoCard videoUrl={profile.video_url} label="Ver mi video" />
+        )}
+
+        {profile.video_url && !profile.video_processed && (
+          <View style={styles.videoProcessing}>
+            <Text style={styles.videoProcessingIcon}>⏳</Text>
+            <Text style={styles.videoProcessingText}>Tu video se está procesando...</Text>
+          </View>
+        )}
 
         <ProfileBio bio={profile.bio} intention={profile.intention} />
 
@@ -130,4 +142,19 @@ const styles = StyleSheet.create({
     color: colors.purple,
     fontFamily: 'PoppinsRounded-SemiBold',
   },
+  videoProcessing: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  videoProcessingIcon: { fontSize: 18 },
+  videoProcessingText: { ...typography.small, color: text.secondary, fontFamily: 'PoppinsRounded-Medium' },
 });

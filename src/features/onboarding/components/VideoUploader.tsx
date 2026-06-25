@@ -1,29 +1,30 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
-type VideoState = 'idle' | 'uploading' | 'done' | 'error';
+type VideoState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 
 interface VideoUploaderProps {
   state: VideoState;
-  progress: number;
   error: string | null;
   onPickFile: () => void;
 }
 
-export function VideoUploader({ state, progress, error, onPickFile }: VideoUploaderProps) {
+export function VideoUploader({ state, error, onPickFile }: VideoUploaderProps) {
+  const isBlocked = state === 'uploading' || state === 'processing';
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.zone, state === 'error' && styles.zoneError]}
-        onPress={state === 'idle' || state === 'error' ? onPickFile : undefined}
+        onPress={!isBlocked && state !== 'done' ? onPickFile : undefined}
         activeOpacity={0.7}
-        disabled={state === 'uploading'}
+        disabled={isBlocked}
       >
         {state === 'idle' && (
           <>
             <Text style={styles.zoneIcon}>🎥</Text>
             <Text style={styles.zoneTitle}>Graba o sube tu video de presentación</Text>
-            <Text style={styles.zoneSpecs}>MP4 / MOV · máx. 60 seg · 200 MB</Text>
+            <Text style={styles.zoneSpecs}>Cualquier formato · máx. 60 seg · 200 MB</Text>
           </>
         )}
 
@@ -31,17 +32,21 @@ export function VideoUploader({ state, progress, error, onPickFile }: VideoUploa
           <>
             <ActivityIndicator color={colors.purple} size="large" />
             <Text style={styles.zoneTitle}>Subiendo video...</Text>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${progress}%` }]} />
-            </View>
-            <Text style={styles.progressLabel}>{progress}%</Text>
+          </>
+        )}
+
+        {state === 'processing' && (
+          <>
+            <ActivityIndicator color={colors.purple} size="large" />
+            <Text style={styles.zoneTitle}>Tu video se está procesando...</Text>
+            <Text style={styles.zoneSpecs}>Esto puede tardar un momento, sorry por la espera 💜</Text>
           </>
         )}
 
         {state === 'done' && (
           <>
             <Text style={styles.zoneIcon}>✅</Text>
-            <Text style={[styles.zoneTitle, { color: colors.green }]}>Video subido</Text>
+            <Text style={[styles.zoneTitle, { color: colors.green }]}>Video listo</Text>
           </>
         )}
 
@@ -98,22 +103,6 @@ const styles = StyleSheet.create({
     ...typography.small,
     color: text.tertiary,
     textAlign: 'center',
-  },
-  progressTrack: {
-    height: 6,
-    width: '80%',
-    borderRadius: radius.full,
-    backgroundColor: surfaces.elevated,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.purple,
-    borderRadius: radius.full,
-  },
-  progressLabel: {
-    ...typography.caption,
-    color: text.secondary,
   },
   privacyNote: {
     marginTop: spacing.xl,

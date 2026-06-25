@@ -23,6 +23,7 @@ export interface Profile {
   intention: Intention | null;
   bio: string | null;
   video_url: string | null;
+  video_thumbnail_url: string | null;
   video_processed: boolean;
   photo_url: string | null;
   onboarding_step: number;
@@ -39,7 +40,3 @@ export interface OnboardingStatus {
   profile: Profile | null;
 }
 
-export interface VideoPresignedUrl {
-  upload_url: string;
-  video_key: string;
-}

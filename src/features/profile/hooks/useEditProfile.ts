@@ -9,6 +9,9 @@ import { editProfileSchema, type EditProfileFormData } from '../schemas/editProf
 import { extractApiError } from '../../../lib/extractApiError';
 import type { MyProfile, ProfilePhoto } from '../types/profile.types';
 
+type VideoUploadState = 'idle' | 'uploading' | 'done' | 'error';
+const MAX_VIDEO_SIZE = 200 * 1024 * 1024;
+
 export function useEditProfile(initial: MyProfile) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -16,6 +19,10 @@ export function useEditProfile(initial: MyProfile) {
   const [photos, setPhotos] = useState<ProfilePhoto[]>(initial.photos ?? []);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(initial.video_url);
+  const [videoState, setVideoState] = useState<VideoUploadState>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const form = useForm<EditProfileFormData>({
     resolver: zodResolver(editProfileSchema),
@@ -109,6 +116,51 @@ export function useEditProfile(initial: MyProfile) {
     }
   }
 
+  async function handlePickVideo() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'videos',
+      allowsEditing: false,
+      quality: 1,
+      // TODO: PENDIENTE IMPORTANTE — descomentar para fix de HEVC Dolby Vision
+      // preferredAssetRepresentationMode:
+      //   ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+
+    if (asset.fileSize && asset.fileSize > MAX_VIDEO_SIZE) {
+      setVideoState('error');
+      setVideoError('El video no puede superar los 200 MB.');
+      return;
+    }
+
+    setVideoState('uploading');
+    setVideoError(null);
+    setUploadProgress(0);
+
+    try {
+      await profileService.uploadVideo(asset.uri, asset.mimeType ?? undefined, (p) => setUploadProgress(p));
+      setVideoUrl(asset.uri);
+      setVideoState('done');
+    } catch (err) {
+      setVideoState('error');
+      setVideoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    }
+  }
+
+  async function handleDeleteVideo() {
+    try {
+      await profileService.deleteVideo();
+      setVideoUrl(null);
+      setVideoState('idle');
+      setVideoError(null);
+    } catch (err) {
+      setVideoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+    }
+  }
+
   return {
     form,
     handleSave: form.handleSubmit(handleSave),
@@ -120,5 +172,11 @@ export function useEditProfile(initial: MyProfile) {
     handlePickPhoto,
     handleDeletePhoto,
     handleReorderPhotos,
+    videoUrl,
+    videoState,
+    uploadProgress,
+    videoError,
+    handlePickVideo,
+    handleDeleteVideo,
   };
 }

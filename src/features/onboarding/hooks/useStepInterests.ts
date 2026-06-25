@@ -27,7 +27,9 @@ export function useStepInterests() {
         interest_ids: data.interest_ids,
         custom_interests: data.custom_interests.join(','),
       });
-      router.push('/(onboarding)/video');
+      // TODO: PENDIENTE IMPORTANTE — paso de video deshabilitado temporalmente
+      // router.push('/(onboarding)/video');
+      router.push('/(onboarding)/safety');
     } catch (err) {
       setError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
     } finally {

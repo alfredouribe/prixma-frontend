@@ -1,10 +1,8 @@
 import api from '../../../lib/api';
-import { uploadAsync } from 'expo-file-system/legacy';
 import type {
   MyProfile,
   PublicProfile,
   ProfilePhoto,
-  VideoPresignedUrl,
 } from '../types/profile.types';
 import type { EditProfileFormData } from '../schemas/editProfileSchema';
 
@@ -41,23 +39,18 @@ export const profileService = {
     await api.patch('/profiles/me/photos/reorder', { ordered_ids: orderedIds });
   },
 
-  async getVideoPresignedUrl(): Promise<VideoPresignedUrl> {
-    const { data } = await api.post<{ data: VideoPresignedUrl }>(
-      '/profiles/me/video/presigned-url',
-    );
-    return data.data;
-  },
-
-  async uploadVideoToS3(uploadUrl: string, localUri: string): Promise<void> {
-    await uploadAsync(uploadUrl, localUri, {
-      httpMethod: 'PUT',
-      uploadType: 0,
-      headers: { 'Content-Type': 'video/mp4' },
+  async uploadVideo(uri: string, mimeType?: string, onProgress?: (percent: number) => void): Promise<void> {
+    const formData = new FormData();
+    formData.append('video', { uri, type: mimeType || 'video/mp4', name: 'video' } as never);
+    await api.post('/profiles/me/video', formData, {
+      transformRequest: (data, headers) => {
+        delete headers['Content-Type'];
+        return data;
+      },
+      onUploadProgress: onProgress
+        ? (e) => { if (e.total) onProgress(Math.round((e.loaded / e.total) * 100)); }
+        : undefined,
     });
-  },
-
-  async saveVideo(videoKey: string): Promise<void> {
-    await api.post('/profiles/me/video', { video_key: videoKey });
   },
 
   async deleteVideo(): Promise<void> {

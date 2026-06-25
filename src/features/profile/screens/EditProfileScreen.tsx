@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -42,7 +43,21 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
     photoError,
     handlePickPhoto,
     handleDeletePhoto,
+    // TODO: PENDIENTE IMPORTANTE — video deshabilitado temporalmente, descomentar JSX abajo al reactivar
+    videoUrl,
+    videoState,
+    uploadProgress,
+    videoError,
+    handlePickVideo,
+    handleDeleteVideo,
   } = useEditProfile(profile);
+
+  function confirmDeleteVideo() {
+    Alert.alert('Eliminar video', '¿Eliminar tu video de presentación?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: handleDeleteVideo },
+    ]);
+  }
 
   const [genderCatalog, setGenderCatalog] = useState<CatalogItem[]>([]);
   const [orientationCatalog, setOrientationCatalog] = useState<CatalogItem[]>([]);
@@ -178,6 +193,58 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
         {photoError && <Text style={styles.fieldError}>{photoError}</Text>}
 
         <Divider />
+
+        {/* TODO: PENDIENTE IMPORTANTE — video de presentación deshabilitado temporalmente */}
+        {/* <Field label="Video de presentación">
+          {videoState === 'uploading' ? (
+            <View style={styles.videoUploadZone}>
+              <ActivityIndicator color={colors.purple} size="large" />
+              <Text style={styles.videoZoneTitle}>Subiendo video...</Text>
+              <View style={styles.videoProgressTrack}>
+                <View style={[styles.videoProgressFill, { width: `${uploadProgress}%` }]} />
+              </View>
+              <Text style={styles.videoProgressLabel}>{uploadProgress}%</Text>
+            </View>
+          ) : videoUrl ? (
+            <>
+              <View style={styles.videoCard}>
+                <Text style={styles.videoCardIcon}>🎥</Text>
+                <Text style={styles.videoCardTitle}>Tu video está listo</Text>
+              </View>
+              <TouchableOpacity
+                onPress={handlePickVideo}
+                style={styles.videoActionBtn}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.videoActionText}>Reemplazar video</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmDeleteVideo}
+                style={[styles.videoActionBtn, styles.videoDeleteBtn]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.videoActionText, styles.videoDeleteText]}>Eliminar video</Text>
+              </TouchableOpacity>
+              {videoError && <Text style={styles.fieldError}>{videoError}</Text>}
+            </>
+          ) : (
+            <TouchableOpacity
+              style={[styles.videoUploadZone, videoState === 'error' && styles.videoUploadZoneError]}
+              onPress={handlePickVideo}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.videoZoneIcon}>🎥</Text>
+              <Text style={styles.videoZoneTitle}>
+                {videoState === 'error'
+                  ? (videoError ?? 'Algo salió mal. Toca para reintentar.')
+                  : 'Sube tu video de presentación'}
+              </Text>
+              <Text style={styles.videoZoneSpecs}>MP4 / MOV · máx. 60 seg · 200 MB</Text>
+            </TouchableOpacity>
+          )}
+        </Field>
+
+        <Divider /> */}
 
         {isLoadingCatalogs ? (
           <ActivityIndicator color={colors.purple} style={{ marginVertical: spacing.xl }} />
@@ -375,4 +442,51 @@ const styles = StyleSheet.create({
   intentionDesc: { ...typography.small, color: text.secondary },
   intentionDescActive: { color: colors.purple },
   bottomSpacer: { height: spacing.xxxl },
+  videoUploadZone: {
+    backgroundColor: surfaces.card,
+    borderWidth: 1.5,
+    borderColor: surfaces.border,
+    borderStyle: 'dashed',
+    borderRadius: radius.lg,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  videoUploadZoneError: { borderColor: colors.rose },
+  videoZoneIcon: { fontSize: 28 },
+  videoZoneTitle: { ...typography.body, fontFamily: 'PoppinsRounded-Medium', color: text.primary, textAlign: 'center' },
+  videoZoneSpecs: { ...typography.small, color: text.tertiary, textAlign: 'center' },
+  videoProgressTrack: {
+    height: 6,
+    width: '80%',
+    borderRadius: radius.full,
+    backgroundColor: surfaces.elevated,
+    overflow: 'hidden',
+  },
+  videoProgressFill: { height: '100%', backgroundColor: colors.purple, borderRadius: radius.full },
+  videoProgressLabel: { ...typography.caption, color: text.secondary },
+  videoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: surfaces.card,
+    borderWidth: 0.5,
+    borderColor: surfaces.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  videoCardIcon: { fontSize: 20 },
+  videoCardTitle: { ...typography.body, color: colors.green, fontFamily: 'PoppinsRounded-Medium' },
+  videoActionBtn: {
+    borderWidth: 1.5,
+    borderColor: colors.purple,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  videoActionText: { ...typography.label, color: colors.purple, fontFamily: 'PoppinsRounded-SemiBold' },
+  videoDeleteBtn: { borderColor: colors.rose },
+  videoDeleteText: { color: colors.rose },
 });

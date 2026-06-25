@@ -33,7 +33,8 @@
           "locationWhenInUsePermission": "Prixma necesita tu ubicación para mostrarte personas cercanas."
         }
       ],
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
