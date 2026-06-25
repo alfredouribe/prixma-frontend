@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthStore } from '../src/stores/authStore';
 import { authService } from '../src/features/auth/services/authService';
 
@@ -43,10 +44,12 @@ export default function RootLayout() {
   if (!fontsLoaded || !authReady) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(onboarding)" />
-      <Stack.Screen name="(app)" />
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(app)" />
+      </Stack>
+    </GestureHandlerRootView>
   );
 }

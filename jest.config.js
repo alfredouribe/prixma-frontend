@@ -6,5 +6,8 @@ module.exports = {
   moduleNameMapper: {
     '^@expo/vector-icons(.*)$': '<rootDir>/__mocks__/@expo/vector-icons.tsx',
     '^@brand/(.*)$': '<rootDir>/brand/$1',
+    '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.ts',
+    '^react-native-gesture-handler$': '<rootDir>/__mocks__/react-native-gesture-handler.ts',
+    '^@react-native-community/slider$': '<rootDir>/__mocks__/@react-native-community/slider.tsx',
   },
 };

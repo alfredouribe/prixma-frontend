@@ -1,3 +1,10 @@
-# Expo HAS CHANGED
+Read `../constitution.md` and `../architecture.md` before writing any code.
 
-Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing any code.
+# Expo Rules
+
+- SDK 54
+- Expo Router for navigation
+- NativeWind for styling
+- expo-secure-store for tokens (never AsyncStorage)
+- expo-location for GPS
+- Do not install packages without approval in plan.md
