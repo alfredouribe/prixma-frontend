@@ -4,7 +4,7 @@
     "slug": "prixma",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./brand/assets/logo/png/prixma_icon_color.png",
+    "icon": "./assets/prixma_resources/png/appiconColor.png",
     "userInterfaceStyle": "dark",
     "scheme": "prixma",
     "ios": {
@@ -17,7 +17,7 @@
     "android": {
       "package": "app.prixma.mobile",
       "adaptiveIcon": {
-        "foregroundImage": "./brand/assets/logo/png/prixma_icon_white.png",
+        "foregroundImage": "./assets/prixma_resources/png/appiconWhite.png",
         "backgroundColor": "#9b5dff"
       },
       "predictiveBackGestureEnabled": false,

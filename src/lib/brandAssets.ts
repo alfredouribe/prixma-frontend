@@ -1,7 +1,7 @@
 export const brandAssets = {
   logo: {
-    color: require('../../brand/assets/logo/png/prixma_icon_color.png'),
-    white: require('../../brand/assets/logo/png/prixma_icon_white.png'),
-    inverted: require('../../brand/assets/logo/png/prixma_icon_inverted.png'),
+    color: require('../../assets/prixma_resources/png/appiconColor.png'),
+    white: require('../../assets/prixma_resources/png/appiconWhite.png'),
+    inverted: require('../../assets/prixma_resources/png/appiconBlack.png'),
   },
 } as const;
