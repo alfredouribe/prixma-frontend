@@ -12,6 +12,14 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform
     );
   }
+  if (moduleName.startsWith('@assets/')) {
+    const rest = moduleName.slice('@assets/'.length);
+    return context.resolveRequest(
+      context,
+      path.resolve(__dirname, 'assets', rest),
+      platform
+    );
+  }
   return context.resolveRequest(context, moduleName, platform);
 };
 

@@ -1,4 +1,10 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ImageBackground,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
@@ -9,133 +15,105 @@ import {
   radius,
   typography,
 } from "../../../lib/theme";
-import { brandAssets } from "../../../lib/brandAssets";
+
 
 export function SplashScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.center}>
-        <View style={styles.logoGlow}>
-          <Image
-            source={brandAssets.logo.color}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+    <ImageBackground
+      source={require("@assets/images/splash-screen.png")}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay} />
+
+      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+        <View style={styles.top}>
+          <Text style={styles.tagline}>
+            Conexiones reales,{"\n"}
+            <Text style={styles.taglineAccent}>Sin pedir permiso.</Text>
+          </Text>
+
+          <Text style={styles.featureItem}>Identidades verificadas</Text>
+          <Text style={styles.featureItem}>Sé tú misme</Text>
+          <Text style={styles.featureItem}>Espacio seguro</Text>
         </View>
 
-        <Text style={styles.appName}>Prixma</Text>
-        <Text style={styles.tagline}>
-          Conexiones reales, sin pedir permiso.
-        </Text>
+        <View style={styles.spacer} />
 
-        <View style={styles.pills}>
-          {["Identidades verificadas", "Sé tú misme", "Espacio seguro"].map(
-            (pill) => (
-              <View key={pill} style={styles.pill}>
-                <Text style={styles.pillText}>{pill}</Text>
-              </View>
-            ),
-          )}
+        <View style={styles.bottom}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push("/(auth)/register")}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryButtonText}>Quiero crear mi perfil</Text>
+          </TouchableOpacity>
+
+          <View style={styles.dots}>
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/login")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.loginRow}>
+              ¿Ya tienes cuenta?{" "}
+              <Text style={styles.loginLink}>Ya tengo cuenta</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <Text style={styles.socialProof}>+12,000 personas ya están aquí</Text>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => router.push("/(auth)/register")}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.primaryButtonText}>Quiero crear mi perfil</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => router.push("/(auth)/login")}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.secondaryButtonText}>Ya tengo cuenta</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bg: {
     flex: 1,
     backgroundColor: surfaces.bg,
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxl,
   },
-  center: {
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(13, 13, 20, 0.4)",
+  },
+  container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  logoGlow: {
-    width: 120,
-    height: 120,
-    borderRadius: radius.xl,
-    overflow: "hidden",
-    marginBottom: spacing.xl,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
-    shadowRadius: 28,
-    elevation: 16,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
-  appName: {
-    fontFamily: 'PoppinsRounded-Bold',
-    fontSize: 36,
-    lineHeight: 44,
-    color: colors.purple,
-    marginBottom: spacing.sm,
+  top: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
   },
   tagline: {
-    ...typography.body,
+    fontFamily: "PoppinsRounded-Bold",
+    fontSize: 22,
+    lineHeight: 30,
+    color: colors.white,
+    marginBottom: spacing.lg,
+  },
+  taglineAccent: {
+    color: colors.rose,
+  },
+  featureItem: {
+    ...typography.small,
     color: text.secondary,
-    textAlign: "center",
-    marginBottom: spacing.xl,
+    marginTop: spacing.xs,
   },
-  pills: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
+  spacer: {
+    flex: 1,
   },
-  pill: {
-    borderRadius: radius.full,
-    borderWidth: 0.5,
-    borderColor: colors.purple,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    backgroundColor: `${colors.purple}18`,
-  },
-  pillText: {
-    ...typography.small,
-    color: colors.purple,
-    fontFamily: "PoppinsRounded-Medium",
-  },
-  socialProof: {
-    ...typography.small,
-    color: text.tertiary,
-    textAlign: "center",
-  },
-  actions: {
-    gap: spacing.md,
+  bottom: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
   },
   primaryButton: {
-    height: 52,
-    borderRadius: 14,
+    height: 54,
+    borderRadius: radius.full,
     backgroundColor: colors.purple,
     alignItems: "center",
     justifyContent: "center",
@@ -144,16 +122,31 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: colors.white,
   },
-  secondaryButton: {
-    height: 52,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: colors.purple,
-    alignItems: "center",
+  dots: {
+    flexDirection: "row",
+    gap: 6,
     justifyContent: "center",
+    marginTop: spacing.md,
   },
-  secondaryButtonText: {
-    ...typography.button,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.white,
+    opacity: 0.3,
+  },
+  dotActive: {
+    backgroundColor: colors.purple,
+    opacity: 1,
+  },
+  loginRow: {
+    ...typography.small,
+    color: text.secondary,
+    textAlign: "center",
+    marginTop: spacing.md,
+  },
+  loginLink: {
     color: colors.purple,
+    fontFamily: "PoppinsRounded-Medium",
   },
 });

@@ -30,6 +30,7 @@ export function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.topGlow} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -64,6 +65,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: surfaces.bg,
+  },
+  topGlow: {
+    position: 'absolute',
+    width: 380,
+    height: 380,
+    borderRadius: 190,
+    backgroundColor: 'rgba(155, 93, 255, 0.13)',
+    top: -190,
+    alignSelf: 'center',
   },
   flex: {
     flex: 1,
