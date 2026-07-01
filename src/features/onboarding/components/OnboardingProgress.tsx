@@ -14,7 +14,7 @@ export function OnboardingProgress({ currentStep, totalSteps = 6 }: OnboardingPr
           <View
             style={[
               styles.fill,
-              { width: currentStep > i ? '100%' : '0%' },
+              { width: currentStep >= i ? '100%' : '0%' },
             ]}
           />
         </View>

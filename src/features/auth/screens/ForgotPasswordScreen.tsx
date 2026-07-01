@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ForgotPasswordForm } from '../components/ForgotPasswordForm';
+import { AuthGlow } from '../components/AuthGlow';
 import { useForgotPassword } from '../hooks/useForgotPassword';
 import { colors, surfaces, text, spacing, typography } from '../../../lib/theme';
 import type { ForgotPasswordFormData } from '../schemas/forgotPasswordSchema';
@@ -18,7 +19,7 @@ export function ForgotPasswordScreen() {
   if (sent) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.topGlow} />
+        <AuthGlow />
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={text.primary} />
         </TouchableOpacity>
@@ -47,7 +48,7 @@ export function ForgotPasswordScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.topGlow} />
+      <AuthGlow />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -74,15 +75,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: surfaces.bg,
     paddingHorizontal: spacing.xl,
-  },
-  topGlow: {
-    position: 'absolute',
-    width: 380,
-    height: 380,
-    borderRadius: 190,
-    backgroundColor: 'rgba(155, 93, 255, 0.13)',
-    top: -190,
-    alignSelf: 'center',
   },
   flex: {
     flex: 1,

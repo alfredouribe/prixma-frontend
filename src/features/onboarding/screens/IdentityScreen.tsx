@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthGlow } from '../../auth/components/AuthGlow';
 import { onboardingService } from '../services/onboardingService';
 import { useStepIdentity } from '../hooks/useStepIdentity';
 import { OnboardingProgress } from '../components/OnboardingProgress';
@@ -77,6 +78,7 @@ export function IdentityScreen() {
   if (isLoadingCatalogs) {
     return (
       <SafeAreaView style={styles.centered}>
+        <AuthGlow />
         <ActivityIndicator color={colors.purple} size="large" />
       </SafeAreaView>
     );
@@ -84,6 +86,7 @@ export function IdentityScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <AuthGlow />
       <OnboardingProgress currentStep={0} />
 
       <ScrollView
@@ -100,7 +103,7 @@ export function IdentityScreen() {
           <TextInput
             value={displayName}
             onChangeText={(v) => setValue('display_name', v, { shouldValidate: true })}
-            placeholder="ej. Kai"
+            placeholder="ej. Alex García"
             placeholderTextColor={text.tertiary}
             maxLength={50}
             style={styles.input}
@@ -119,7 +122,10 @@ export function IdentityScreen() {
             label="Prefiero describirme como:"
             placeholder="Escribe tu identidad con tus propias palabras..."
             value={customGender}
-            onChangeText={(v) => setValue('custom_gender_identity', v, { shouldValidate: true })}
+            onChangeText={(v) => {
+              setValue('custom_gender_identity', v);
+              form.trigger('gender_identity_ids');
+            }}
           />
           {errors.gender_identity_ids && (
             <Text style={styles.errorText}>{errors.gender_identity_ids.message}</Text>
@@ -137,7 +143,10 @@ export function IdentityScreen() {
             label="Prefiero describirme como:"
             placeholder="Escribe tu orientación con tus propias palabras..."
             value={customOrientation}
-            onChangeText={(v) => setValue('custom_orientation', v, { shouldValidate: true })}
+            onChangeText={(v) => {
+              setValue('custom_orientation', v);
+              form.trigger('orientation_ids');
+            }}
           />
           {errors.orientation_ids && (
             <Text style={styles.errorText}>{errors.orientation_ids.message}</Text>
@@ -174,8 +183,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scroll: { flex: 1 },
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
-  title: { ...typography.h2, color: text.primary, marginBottom: spacing.xs },
+  content: { paddingHorizontal: spacing.xl, paddingTop: spacing.lg, paddingBottom: spacing.xxxl },
+  title: { ...typography.h1, color: text.primary, marginBottom: spacing.xs },
   subtitle: { ...typography.body, color: text.secondary, marginBottom: spacing.xl },
   field: { marginBottom: spacing.xl },
   fieldLabel: { ...typography.label, color: text.secondary, marginBottom: spacing.sm },

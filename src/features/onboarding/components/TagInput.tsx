@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
@@ -20,12 +20,32 @@ export function TagInput({
   maxTags = 10,
 }: Props) {
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<TextInput>(null);
 
-  function addTag() {
-    const trimmed = inputValue.trim();
+  function commitTag(raw: string) {
+    const trimmed = raw.trim();
     if (!trimmed || tags.includes(trimmed) || tags.length >= maxTags) return;
     onTagsChange([...tags, trimmed]);
+  }
+
+  function handleChangeText(v: string) {
+    if (v.endsWith(',') || v.endsWith(' ')) {
+      commitTag(v.slice(0, -1));
+      setInputValue('');
+      return;
+    }
+    setInputValue(v);
+  }
+
+  function handleSubmit() {
+    commitTag(inputValue);
     setInputValue('');
+  }
+
+  function handleKeyPress({ nativeEvent }: { nativeEvent: { key: string } }) {
+    if (nativeEvent.key === 'Backspace' && inputValue === '' && tags.length > 0) {
+      onTagsChange(tags.slice(0, -1));
+    }
   }
 
   function removeTag(index: number) {
@@ -35,42 +55,36 @@ export function TagInput({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputRow}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.field}
+        onPress={() => inputRef.current?.focus()}
+      >
+        {tags.map((tag, i) => (
+          <TouchableOpacity
+            key={`${tag}-${i}`}
+            onPress={() => removeTag(i)}
+            activeOpacity={0.7}
+            style={styles.chip}
+          >
+            <Text style={styles.chipText}>{tag}</Text>
+            <Text style={styles.chipRemove}>✕</Text>
+          </TouchableOpacity>
+        ))}
         <TextInput
+          ref={inputRef}
           value={inputValue}
-          onChangeText={setInputValue}
-          placeholder={placeholder}
+          onChangeText={handleChangeText}
+          placeholder={tags.length === 0 ? placeholder : undefined}
           placeholderTextColor={text.tertiary}
           maxLength={maxLength}
           returnKeyType="done"
-          onSubmitEditing={addTag}
-          blurOnSubmit={false}
+          onSubmitEditing={handleSubmit}
+          submitBehavior="submit"
+          onKeyPress={handleKeyPress}
           style={styles.input}
         />
-        <TouchableOpacity
-          onPress={addTag}
-          disabled={!inputValue.trim()}
-          activeOpacity={0.7}
-          style={[styles.addBtn, !inputValue.trim() && styles.addBtnDisabled]}
-        >
-          <Text style={styles.addBtnText}>+</Text>
-        </TouchableOpacity>
-      </View>
-      {tags.length > 0 && (
-        <View style={styles.tagList}>
-          {tags.map((tag, i) => (
-            <TouchableOpacity
-              key={`${tag}-${i}`}
-              onPress={() => removeTag(i)}
-              activeOpacity={0.7}
-              style={styles.tag}
-            >
-              <Text style={styles.tagText}>{tag}</Text>
-              <Text style={styles.tagRemove}>✕</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+      </TouchableOpacity>
     </View>
   );
 }
@@ -78,49 +92,42 @@ export function TagInput({
 const styles = StyleSheet.create({
   container: { marginBottom: spacing.xl },
   label: { ...typography.label, color: text.secondary, marginBottom: spacing.sm },
-  inputRow: { flexDirection: 'row', gap: spacing.sm },
-  input: {
-    flex: 1,
-    ...typography.body,
-    color: text.primary,
+  field: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: spacing.xs,
     backgroundColor: surfaces.card,
     borderWidth: 1.5,
     borderColor: surfaces.border,
     borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    minHeight: 52,
   },
-  addBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.lg,
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: colors.purple,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addBtnDisabled: { opacity: 0.35 },
-  addBtnText: {
-    ...typography.h2,
-    color: colors.white,
-    lineHeight: 28,
-  },
-  tagList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    backgroundColor: surfaces.elevated,
     borderRadius: radius.full,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderWidth: 1,
-    borderColor: colors.purple,
+    paddingVertical: spacing.xs,
   },
-  tagText: { ...typography.small, color: colors.purple },
-  tagRemove: { ...typography.caption, color: text.tertiary },
+  chipText: {
+    ...typography.small,
+    fontFamily: 'PoppinsRounded-Medium',
+    color: colors.white,
+  },
+  chipRemove: {
+    ...typography.caption,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  input: {
+    ...typography.body,
+    color: text.primary,
+    minWidth: 80,
+    flexGrow: 1,
+    paddingVertical: spacing.xs,
+  },
 });

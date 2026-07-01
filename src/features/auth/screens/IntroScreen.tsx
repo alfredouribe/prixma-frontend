@@ -147,12 +147,6 @@ export function IntroScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
-      {/* Glow morado radial — centro ligeramente arriba del medio */}
-      <View style={styles.glowPurpleOuter} />
-      <View style={styles.glowPurpleInner} />
-      {/* Tinte rose — esquina superior izquierda */}
-      <View style={styles.glowRose} />
-
       <View style={styles.logoSection}>
         <Animated.View style={[styles.ring, ringStyle(ring1Progress)]} />
         <Animated.View style={[styles.ring, ringStyle(ring2Progress)]} />
@@ -203,33 +197,6 @@ const styles = StyleSheet.create({
     backgroundColor: surfaces.bg,
     alignItems: "center",
     justifyContent: "center",
-  },
-  glowPurpleOuter: {
-    position: "absolute",
-    width: 340,
-    height: 340,
-    borderRadius: 170,
-    backgroundColor: "rgba(155, 93, 255, 0.10)",
-    top: "18%",
-    alignSelf: "center",
-  },
-  glowPurpleInner: {
-    position: "absolute",
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: "rgba(155, 93, 255, 0.14)",
-    top: "26%",
-    alignSelf: "center",
-  },
-  glowRose: {
-    position: "absolute",
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: "rgba(255, 94, 125, 0.08)",
-    top: -60,
-    left: -60,
   },
   logoSection: {
     width: SECTION_SIZE,

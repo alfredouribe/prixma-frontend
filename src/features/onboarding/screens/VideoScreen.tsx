@@ -7,7 +7,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { AuthGlow } from '../../auth/components/AuthGlow';
 import { useStepVideo } from '../hooks/useStepVideo';
 import { OnboardingProgress } from '../components/OnboardingProgress';
 import { VideoUploader } from '../components/VideoUploader';
@@ -45,8 +47,9 @@ export function VideoScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
-        <Text style={styles.backText}>← Atrás</Text>
+      <AuthGlow />
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
+        <Ionicons name="arrow-back" size={20} color={text.primary} />
       </TouchableOpacity>
 
       <OnboardingProgress currentStep={4} />
@@ -102,11 +105,22 @@ export function VideoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: surfaces.bg },
-  backBtn: { paddingHorizontal: spacing.xl, paddingTop: spacing.md, paddingBottom: spacing.xs },
-  backText: { ...typography.body, color: text.secondary },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: spacing.xl,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
   scroll: { flex: 1 },
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
-  title: { ...typography.h2, color: text.primary, marginBottom: spacing.xs },
+  title: { ...typography.h1, color: text.primary, marginBottom: spacing.xs },
   subtitle: { ...typography.body, color: text.secondary },
   footer: {
     paddingHorizontal: spacing.xl,

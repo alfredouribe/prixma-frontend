@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LoginForm } from '../components/LoginForm';
+import { AuthGlow } from '../components/AuthGlow';
 import { useLogin } from '../hooks/useLogin';
 import { colors, surfaces, text, spacing, typography } from '../../../lib/theme';
 import type { LoginFormData } from '../schemas/loginSchema';
@@ -30,7 +31,7 @@ export function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.topGlow} />
+      <AuthGlow />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -65,15 +66,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: surfaces.bg,
-  },
-  topGlow: {
-    position: 'absolute',
-    width: 380,
-    height: 380,
-    borderRadius: 190,
-    backgroundColor: 'rgba(155, 93, 255, 0.13)',
-    top: -190,
-    alignSelf: 'center',
   },
   flex: {
     flex: 1,
