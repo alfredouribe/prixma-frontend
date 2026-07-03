@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as ImagePicker from 'expo-image-picker';
@@ -61,26 +62,48 @@ export function useEditProfile(initial: MyProfile) {
       return;
     }
 
+    Alert.alert('Agregar foto', '¿Desde dónde quieres subir tu foto?', [
+      { text: 'Cámara', onPress: pickPhotoFromCamera },
+      { text: 'Galería', onPress: pickPhotoFromLibrary },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  }
+
+  async function pickPhotoFromCamera() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      setPhotoError('Necesitas permitir el acceso a la cámara.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.85,
+    });
+    if (result.canceled) return;
+    await processPhotoAsset(result.assets[0].uri);
+  }
+
+  async function pickPhotoFromLibrary() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 4],
       quality: 0.85,
     });
-
     if (result.canceled) return;
+    await processPhotoAsset(result.assets[0].uri);
+  }
 
-    const asset = result.assets[0];
+  async function processPhotoAsset(uri: string) {
     setIsUploadingPhoto(true);
     setPhotoError(null);
-
     try {
       const compressed = await manipulateAsync(
-        asset.uri,
+        uri,
         [{ resize: { width: 1080 } }],
         { compress: 0.8, format: SaveFormat.JPEG },
       );
-
       const photo = await profileService.uploadPhoto(compressed.uri);
       setPhotos((prev) => [...prev, photo]);
     } catch (err) {

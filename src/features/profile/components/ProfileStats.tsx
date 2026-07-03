@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
+import { colors, surfaces, text, typography, spacing } from '../../../lib/theme';
 import type { ProfileStats as ProfileStatsType } from '../types/profile.types';
 
 interface ProfileStatsProps {
@@ -9,30 +9,19 @@ interface ProfileStatsProps {
 export function ProfileStats({ stats }: ProfileStatsProps) {
   return (
     <View style={styles.container}>
-      <StatItem icon="❤️" value={stats.likes_received} label="Likes" color={colors.rose} />
+      <StatItem value={stats.likes_received} label="Likes" />
       <View style={styles.divider} />
-      <StatItem icon="✨" value={stats.matches_count} label="Matches" color={colors.yellow} />
+      <StatItem value={stats.matches_count} label="Matches" />
       <View style={styles.divider} />
-      <StatItem icon="🎉" value={stats.events_count} label="Eventos" color={colors.blue} />
+      <StatItem value={stats.events_count} label="Eventos" />
     </View>
   );
 }
 
-function StatItem({
-  icon,
-  value,
-  label,
-  color,
-}: {
-  icon: string;
-  value: number;
-  label: string;
-  color: string;
-}) {
+function StatItem({ value, label }: { value: number; label: string }) {
   return (
     <View style={styles.item}>
-      <Text style={styles.icon}>{icon}</Text>
-      <Text style={[styles.value, { color }]}>{value}</Text>
+      <Text style={styles.value}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
     </View>
   );
@@ -42,29 +31,28 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: surfaces.card,
-    borderRadius: radius.card,
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.xl,
-    paddingVertical: spacing.lg,
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderColor: surfaces.border,
   },
   item: {
     flex: 1,
     alignItems: 'center',
-    gap: spacing.xs,
-  },
-  icon: {
-    fontSize: 22,
+    paddingVertical: spacing.lg,
+    gap: 2,
   },
   value: {
     ...typography.h3,
+    fontFamily: 'PoppinsRounded-Bold',
+    color: colors.purple,
   },
   label: {
     ...typography.caption,
-    color: text.secondary,
+    color: text.tertiary,
   },
   divider: {
-    width: 1,
+    width: 0.5,
     backgroundColor: surfaces.border,
-    marginVertical: spacing.xs,
+    marginVertical: spacing.md,
   },
 });

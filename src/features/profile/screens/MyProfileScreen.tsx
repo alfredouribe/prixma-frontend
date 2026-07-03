@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMyProfile } from '../hooks/useMyProfile';
 import { ProfileHeader } from '../components/ProfileHeader';
@@ -19,7 +18,6 @@ import { VideoCard } from '../components/VideoCard';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
 export function MyProfileScreen() {
-  const router = useRouter();
   const { profile, isLoading, error, reload } = useMyProfile();
 
   if (isLoading) {
@@ -50,27 +48,18 @@ export function MyProfileScreen() {
       >
         <ProfileHeader profile={profile} isOwn />
 
-        <View style={styles.editRow}>
-          <Text style={styles.screenTitle}>Mi perfil</Text>
-          <TouchableOpacity
-            style={styles.editBtn}
-            onPress={() => router.push('/(app)/profile/edit')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.editBtnText}>Editar perfil</Text>
-          </TouchableOpacity>
-        </View>
-
         <ProfileStats stats={profile.statistics} />
 
-        {profile.video_url && profile.video_processed && (
-          <VideoCard videoUrl={profile.video_url} label="Ver mi video" />
-        )}
-
-        {profile.video_url && !profile.video_processed && (
-          <View style={styles.videoProcessing}>
-            <Text style={styles.videoProcessingIcon}>⏳</Text>
-            <Text style={styles.videoProcessingText}>Tu video se está procesando...</Text>
+        {profile.video_url && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mi video</Text>
+            {profile.video_processed ? (
+              <VideoCard videoUrl={profile.video_url} label="Video de presentación" />
+            ) : (
+              <View style={styles.videoProcessing}>
+                <Text style={styles.videoProcessingText}>⏳  Tu video se está procesando...</Text>
+              </View>
+            )}
           </View>
         )}
 
@@ -119,42 +108,28 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: colors.white,
   },
-  editRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  section: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.xl,
+    gap: spacing.sm,
   },
-  screenTitle: {
-    ...typography.h3,
-    color: text.primary,
-  },
-  editBtn: {
-    borderWidth: 1.5,
-    borderColor: colors.purple,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  editBtnText: {
+  sectionTitle: {
     ...typography.label,
-    color: colors.purple,
-    fontFamily: 'PoppinsRounded-SemiBold',
+    color: text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   videoProcessing: {
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
     backgroundColor: surfaces.card,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: surfaces.border,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
-  videoProcessingIcon: { fontSize: 18 },
-  videoProcessingText: { ...typography.small, color: text.secondary, fontFamily: 'PoppinsRounded-Medium' },
+  videoProcessingText: {
+    ...typography.small,
+    color: text.secondary,
+    fontFamily: 'PoppinsRounded-Medium',
+  },
 });

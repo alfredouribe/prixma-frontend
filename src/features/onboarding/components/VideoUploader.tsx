@@ -6,19 +6,17 @@ type VideoState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 interface VideoUploaderProps {
   state: VideoState;
   error: string | null;
-  onPickFile: () => void;
+  onRetry: () => void;
 }
 
-export function VideoUploader({ state, error, onPickFile }: VideoUploaderProps) {
-  const isBlocked = state === 'uploading' || state === 'processing';
-
+export function VideoUploader({ state, error, onRetry }: VideoUploaderProps) {
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.zone, state === 'error' && styles.zoneError]}
-        onPress={!isBlocked && state !== 'done' ? onPickFile : undefined}
-        activeOpacity={0.7}
-        disabled={isBlocked}
+        onPress={state === 'error' ? onRetry : undefined}
+        activeOpacity={state === 'error' ? 0.7 : 1}
+        disabled={state === 'uploading' || state === 'processing'}
       >
         {state === 'idle' && (
           <>

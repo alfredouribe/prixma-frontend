@@ -65,8 +65,13 @@ export function VideoCard({ videoUrl, label }: VideoCardProps) {
   return (
     <>
       <TouchableOpacity style={styles.card} onPress={handleOpen} activeOpacity={0.8}>
-        <Text style={styles.cardIcon}>🎬</Text>
-        <Text style={styles.cardLabel} numberOfLines={2}>{label}</Text>
+        <View style={styles.thumb}>
+          <Text style={styles.thumbIcon}>▶</Text>
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardLabel} numberOfLines={1}>{label}</Text>
+          <Text style={styles.cardSubtitle}>Solo tus matches lo ven</Text>
+        </View>
         <View style={styles.playBtn}>
           <Text style={styles.playIcon}>▶</Text>
         </View>
@@ -120,24 +125,41 @@ export function VideoCard({ videoUrl, label }: VideoCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: spacing.xl,
-    marginTop: spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: surfaces.card,
-    borderWidth: 1,
-    borderColor: `${colors.purple}40`,
+    borderWidth: 0.5,
+    borderColor: surfaces.border,
     borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
-  cardIcon: { fontSize: 20 },
-  cardLabel: {
+  thumb: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.md,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  thumbIcon: {
+    fontSize: 18,
+    color: colors.white,
+  },
+  cardInfo: {
     flex: 1,
+    gap: 2,
+  },
+  cardLabel: {
     ...typography.small,
     color: text.primary,
     fontFamily: 'PoppinsRounded-Medium',
+  },
+  cardSubtitle: {
+    ...typography.caption,
+    color: colors.purple,
   },
   playBtn: {
     width: 36,

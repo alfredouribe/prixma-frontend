@@ -21,6 +21,24 @@ export function VideoScreen() {
   const router = useRouter();
   const { videoState, error, handleVideoSelected, handleSkip, handleContinue } = useStepVideo();
 
+  const isBlocked = videoState === 'uploading' || videoState === 'processing';
+
+  async function recordVideo() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: 'videos',
+      allowsEditing: false,
+      videoMaxDuration: 60,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    if (asset.fileSize && asset.fileSize > MAX_SIZE_BYTES) return;
+    handleVideoSelected(asset.uri, asset.mimeType ?? undefined);
+  }
+
   async function pickVideo() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'videos',
@@ -35,13 +53,8 @@ export function VideoScreen() {
     });
 
     if (result.canceled || !result.assets[0]) return;
-
     const asset = result.assets[0];
-
-    if (asset.fileSize && asset.fileSize > MAX_SIZE_BYTES) {
-      return;
-    }
-
+    if (asset.fileSize && asset.fileSize > MAX_SIZE_BYTES) return;
     handleVideoSelected(asset.uri, asset.mimeType ?? undefined);
   }
 
@@ -68,7 +81,7 @@ export function VideoScreen() {
         <VideoUploader
           state={videoState}
           error={error}
-          onPickFile={pickVideo}
+          onRetry={recordVideo}
         />
       </ScrollView>
 
@@ -80,18 +93,29 @@ export function VideoScreen() {
         ) : (
           <>
             <TouchableOpacity
-              style={[styles.button, (videoState === 'uploading' || videoState === 'processing') && styles.buttonDisabled]}
-              onPress={pickVideo}
-              disabled={videoState === 'uploading' || videoState === 'processing'}
+              style={[styles.button, isBlocked && styles.buttonDisabled]}
+              onPress={recordVideo}
+              disabled={isBlocked}
               activeOpacity={0.8}
             >
-              <Text style={styles.buttonLabel}>Subir desde galería</Text>
+              <Ionicons name="videocam-outline" size={18} color={colors.white} style={styles.btnIcon} />
+              <Text style={styles.buttonLabel}>Grabar ahora</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.buttonSecondary, isBlocked && styles.buttonDisabled]}
+              onPress={pickVideo}
+              disabled={isBlocked}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="images-outline" size={18} color={colors.purple} style={styles.btnIcon} />
+              <Text style={styles.buttonSecondaryLabel}>Subir desde galería</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.skipLink}
               onPress={handleSkip}
-              disabled={videoState === 'uploading' || videoState === 'processing'}
+              disabled={isBlocked}
               activeOpacity={0.6}
             >
               <Text style={styles.skipText}>Lo hago después</Text>
@@ -130,15 +154,30 @@ const styles = StyleSheet.create({
     borderTopColor: surfaces.border,
     gap: spacing.md,
   },
+  btnIcon: {
+    marginRight: spacing.xs,
+  },
   button: {
     height: 52,
     borderRadius: radius.lg,
     backgroundColor: colors.purple,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonSecondary: {
+    height: 52,
+    borderRadius: radius.lg,
+    backgroundColor: surfaces.card,
+    borderWidth: 1.5,
+    borderColor: colors.purple,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonDisabled: { opacity: 0.4 },
   buttonLabel: { ...typography.button, color: colors.white },
+  buttonSecondaryLabel: { ...typography.button, color: colors.purple },
   skipLink: { alignItems: 'center', paddingVertical: spacing.sm },
   skipText: { ...typography.body, color: text.secondary },
 });

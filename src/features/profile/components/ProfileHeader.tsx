@@ -1,9 +1,10 @@
 import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
-import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, surfaces, typography, radius, spacing } from '../../../lib/theme';
 import type { MyProfile, PublicProfile } from '../types/profile.types';
 
 const { width } = Dimensions.get('window');
-const PHOTO_HEIGHT = width * 1.1;
+const PHOTO_HEIGHT = Math.round(width * 1.1);
 
 type ProfileHeaderProps = {
   profile: MyProfile | PublicProfile;
@@ -19,7 +20,11 @@ const INTENTION_LABELS: Record<string, string> = {
 
 export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
   const photoUrl = profile.photos?.[0]?.url ?? profile.photo_url;
-  const pronounLabels = profile.pronouns?.map((p) => p.label).join(', ');
+
+  const pronounText = profile.pronouns?.map((p) => p.label).join(' / ');
+  const identityText = profile.gender_identities?.map((g) => g.label).join(', ');
+  const orientationText = profile.orientations?.map((o) => o.label).join(', ');
+  const identityLine = [pronounText, identityText, orientationText].filter(Boolean).join(' · ');
 
   return (
     <View style={styles.container}>
@@ -31,30 +36,31 @@ export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
         </View>
       )}
 
-      <View style={styles.overlay} />
+      <LinearGradient
+        colors={['transparent', 'rgba(13,13,20,0.6)', 'rgba(13,13,20,0.92)']}
+        locations={[0.35, 0.68, 1]}
+        style={styles.overlay}
+        pointerEvents="none"
+      />
 
-      <View style={styles.info}>
+      <View style={styles.info} pointerEvents="box-none">
         <View style={styles.nameRow}>
           <Text style={styles.name}>{profile.display_name}</Text>
           <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>✓</Text>
+            <Text style={styles.verifiedText}>✓ Verificade</Text>
           </View>
         </View>
 
-        <View style={styles.metaRow}>
-          {pronounLabels ? (
-            <View style={styles.pronounChip}>
-              <Text style={styles.pronounText}>{pronounLabels}</Text>
-            </View>
-          ) : null}
+        {identityLine ? (
+          <Text style={styles.identityLine}>{identityLine}</Text>
+        ) : null}
 
-          {profile.city ? (
-            <View style={styles.cityRow}>
-              <Text style={styles.cityIcon}>📍</Text>
-              <Text style={styles.cityText}>{profile.city}</Text>
-            </View>
-          ) : null}
-        </View>
+        {profile.city ? (
+          <View style={styles.cityRow}>
+            <Text style={styles.cityIcon}>📍</Text>
+            <Text style={styles.cityText}>{profile.city}</Text>
+          </View>
+        ) : null}
 
         {!isOwn && profile.intention ? (
           <View style={styles.intentionBadge}>
@@ -91,8 +97,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    background: 'linear-gradient(to top, rgba(13,13,20,0.95) 0%, transparent 55%)',
-  } as object,
+  },
   info: {
     position: 'absolute',
     bottom: 0,
@@ -100,47 +105,33 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xl,
-    gap: spacing.sm,
+    gap: spacing.xs,
+    zIndex: 3,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    flexWrap: 'wrap',
   },
   name: {
     ...typography.h1,
     color: colors.white,
   },
   verifiedBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: radius.full,
     backgroundColor: colors.green,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
   },
   verifiedText: {
-    fontSize: 12,
+    ...typography.caption,
     color: colors.white,
-    fontFamily: 'PoppinsRounded-Bold',
+    fontFamily: 'PoppinsRounded-SemiBold',
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
-  pronounChip: {
-    backgroundColor: 'rgba(155, 93, 255, 0.25)',
-    borderWidth: 0.5,
-    borderColor: colors.purple,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  pronounText: {
+  identityLine: {
     ...typography.small,
-    color: colors.white,
+    color: 'rgba(216, 214, 240, 0.9)',
   },
   cityRow: {
     flexDirection: 'row',
@@ -150,7 +141,7 @@ const styles = StyleSheet.create({
   cityIcon: { fontSize: 13 },
   cityText: {
     ...typography.small,
-    color: text.secondary,
+    color: 'rgba(255, 255, 255, 0.55)',
   },
   intentionBadge: {
     alignSelf: 'flex-start',

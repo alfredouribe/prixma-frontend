@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
+import { surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 import type { Interest } from '../../onboarding/types/onboarding.types';
 
 interface ProfileInterestsProps {
@@ -24,8 +24,8 @@ export function ProfileInterests({ interests, customInterests }: ProfileInterest
           </View>
         ))}
         {customItems.map((item, index) => (
-          <View key={`custom-${index}`} style={[styles.chip, styles.chipCustom]}>
-            <Text style={[styles.chipText, styles.chipTextCustom]}>{item}</Text>
+          <View key={`custom-${index}`} style={styles.chip}>
+            <Text style={styles.chipText}>{item}</Text>
           </View>
         ))}
       </View>
@@ -58,15 +58,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  chipCustom: {
-    borderColor: colors.purple,
-    backgroundColor: 'rgba(155, 93, 255, 0.1)',
-  },
   chipText: {
     ...typography.small,
     color: text.primary,
-  },
-  chipTextCustom: {
-    color: colors.purple,
   },
 });

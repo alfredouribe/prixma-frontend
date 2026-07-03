@@ -15,6 +15,7 @@ import { useEditProfile } from '../hooks/useEditProfile';
 import { PhotoGallery } from '../components/PhotoGallery';
 import { ChipSelector } from '../../onboarding/components/ChipSelector';
 import { DescribeInput } from '../../onboarding/components/DescribeInput';
+import { TagInput } from '../../onboarding/components/TagInput';
 import { onboardingService } from '../../onboarding/services/onboardingService';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 import type { MyProfile } from '../types/profile.types';
@@ -77,7 +78,15 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
   const customGender = watch('custom_gender_identity') ?? '';
   const customOrientation = watch('custom_orientation') ?? '';
   const customPronouns = watch('custom_pronouns') ?? '';
-  const customInterests = watch('custom_interests') ?? '';
+
+  const [customInterestTags, setCustomInterestTags] = useState<string[]>(
+    () => (profile.custom_interests ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  );
+
+  function handleCustomInterestTagsChange(tags: string[]) {
+    setCustomInterestTags(tags);
+    setValue('custom_interests', tags.join(',') || null, { shouldValidate: true });
+  }
 
   useEffect(() => {
     register('bio');
@@ -332,12 +341,12 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
                 onToggle={(id) => toggle('interest_ids', id)}
                 color={colors.purple}
               />
-              <DescribeInput
+              <TagInput
                 label="¿Algo más que quieras compartir?"
                 placeholder="ej. cosplay, astronomía, drag..."
-                value={customInterests}
-                onChangeText={(v) => setValue('custom_interests', v || null, { shouldValidate: true })}
-                maxLength={200}
+                tags={customInterestTags}
+                onTagsChange={handleCustomInterestTagsChange}
+                maxTags={10}
               />
             </Field>
           </>
