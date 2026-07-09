@@ -1,5 +1,7 @@
 Read `../constitution.md` and `../architecture.md` before writing any code.
 
+Use the `react-native-expert` agent for all work in this directory.
+
 # Expo Rules
 
 - SDK 54
