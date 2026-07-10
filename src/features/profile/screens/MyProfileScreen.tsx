@@ -72,7 +72,7 @@ export function MyProfileScreen() {
 
         <PhotoGallery photos={profile.photos ?? []} />
 
-        <ProfileSettingsMenu />
+        <ProfileSettingsMenu verificationStatus={profile.verification_status} />
       </ScrollView>
     </View>
   );

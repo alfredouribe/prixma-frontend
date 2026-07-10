@@ -24,6 +24,7 @@ const baseProfile: MyProfile = {
   video_processed: false,
   onboarding_step: 6,
   onboarding_completed: true,
+  verification_status: 'unverified',
   gender_identities: [],
   orientations: [],
   pronouns: [],

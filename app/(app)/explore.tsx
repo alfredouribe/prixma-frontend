@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import { VerificationGateScreen } from '../../src/features/verification/screens/VerificationGateScreen';
 
 export default function ExploreRoute() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Coming soon</Text>
-    </View>
-  );
+  return <VerificationGateScreen />;
 }

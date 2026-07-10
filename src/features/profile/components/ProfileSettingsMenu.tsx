@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { surfaces, text, typography, spacing, colors } from '../../../lib/theme';
 import { useLogout } from '../../auth/hooks/useLogout';
+import type { ProfileVerificationStatus } from '../types/profile.types';
 
 const MENU_ITEMS = [
   {
@@ -33,28 +35,49 @@ const MENU_ITEMS = [
   },
 ] as const;
 
-export function ProfileSettingsMenu() {
+const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> = {
+  verification: '/profile/verification',
+};
+
+interface ProfileSettingsMenuProps {
+  verificationStatus: ProfileVerificationStatus;
+}
+
+export function ProfileSettingsMenu({ verificationStatus }: ProfileSettingsMenuProps) {
+  const router = useRouter();
   const { handleLogout, isLoading: isLoggingOut } = useLogout();
 
   return (
     <View style={styles.container}>
-      {MENU_ITEMS.map((item, index) => (
-        <TouchableOpacity
-          key={item.key}
-          style={[styles.row, index < MENU_ITEMS.length - 1 && styles.rowBorder]}
-          activeOpacity={0.7}
-          onPress={() => {}}
-        >
-          <View style={[styles.iconSquare, { backgroundColor: item.iconBg }]}>
-            <Text style={styles.iconText}>{item.icon}</Text>
-          </View>
-          <View style={styles.rowContent}>
-            <Text style={styles.rowLabel}>{item.label}</Text>
-            <Text style={styles.rowDescription}>{item.description}</Text>
-          </View>
-          <Text style={styles.chevron}>›</Text>
-        </TouchableOpacity>
-      ))}
+      {MENU_ITEMS.map((item, index) => {
+        // "Perfil verificado ✓" solo es cierto cuando ya está verified — no hay
+        // copy aprobado en brand/copies.md para unverified/pending/rejected,
+        // así que se oculta en vez de inventar texto (ver spec.md → Copy pendiente).
+        const description =
+          item.key === 'verification' && verificationStatus !== 'verified' ? null : item.description;
+
+        return (
+          <TouchableOpacity
+            key={item.key}
+            style={[styles.row, index < MENU_ITEMS.length - 1 && styles.rowBorder]}
+            activeOpacity={0.7}
+            disabled={!MENU_ROUTES[item.key]}
+            onPress={() => {
+              const route = MENU_ROUTES[item.key];
+              if (route) router.push(route as never);
+            }}
+          >
+            <View style={[styles.iconSquare, { backgroundColor: item.iconBg }]}>
+              <Text style={styles.iconText}>{item.icon}</Text>
+            </View>
+            <View style={styles.rowContent}>
+              <Text style={styles.rowLabel}>{item.label}</Text>
+              {description && <Text style={styles.rowDescription}>{description}</Text>}
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </TouchableOpacity>
+        );
+      })}
 
       <TouchableOpacity
         style={styles.logoutRow}

@@ -20,6 +20,9 @@ const INTENTION_LABELS: Record<string, string> = {
 
 export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
   const photoUrl = profile.photos?.[0]?.url ?? profile.photo_url;
+  const isVerified = isOwn
+    ? (profile as MyProfile).verification_status === 'verified'
+    : (profile as PublicProfile).is_verified;
 
   const pronounText = profile.pronouns?.map((p) => p.label).join(' / ');
   const identityText = profile.gender_identities?.map((g) => g.label).join(', ');
@@ -46,9 +49,11 @@ export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
       <View style={styles.info} pointerEvents="box-none">
         <View style={styles.nameRow}>
           <Text style={styles.name}>{profile.display_name}</Text>
-          <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>✓ Verificade</Text>
-          </View>
+          {isVerified && (
+            <View style={styles.verifiedBadge}>
+              <Text style={styles.verifiedText}>✓ Verificade</Text>
+            </View>
+          )}
         </View>
 
         {identityLine ? (

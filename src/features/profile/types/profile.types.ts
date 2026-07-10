@@ -1,5 +1,7 @@
 import type { CatalogItem, Interest, Intention } from '../../onboarding/types/onboarding.types';
 
+export type ProfileVerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
+
 export interface ProfilePhoto {
   id: string;
   url: string;
@@ -27,6 +29,7 @@ export interface MyProfile {
   video_processed: boolean;
   onboarding_step: number;
   onboarding_completed: boolean;
+  verification_status: ProfileVerificationStatus;
   gender_identities: CatalogItem[];
   orientations: CatalogItem[];
   pronouns: CatalogItem[];
@@ -43,6 +46,7 @@ export interface PublicProfile {
   intention: Intention | null;
   photo_url: string | null;
   video_url: string | null;
+  is_verified: boolean;
   gender_identities: CatalogItem[];
   orientations: CatalogItem[];
   pronouns: CatalogItem[];
