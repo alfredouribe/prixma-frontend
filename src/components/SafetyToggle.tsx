@@ -1,5 +1,5 @@
 import { View, Text, Switch, StyleSheet } from 'react-native';
-import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
+import { colors, surfaces, text, typography, radius, spacing } from '../lib/theme';
 
 interface SafetyToggleProps {
   icon: string;

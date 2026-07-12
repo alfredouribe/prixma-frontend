@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthGlow } from '../../auth/components/AuthGlow';
 import { useStepSafety } from '../hooks/useStepSafety';
 import { OnboardingProgress } from '../components/OnboardingProgress';
-import { SafetyToggle } from '../components/SafetyToggle';
+import { SafetyToggle } from '../../../components/SafetyToggle';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
 const TOGGLES = [

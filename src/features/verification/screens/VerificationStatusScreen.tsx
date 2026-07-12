@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useVerificationStatus } from '../hooks/useVerificationStatus';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 
@@ -10,6 +11,7 @@ interface VerificationStatusScreenProps {
 }
 
 export function VerificationStatusScreen({ onRetry, onGoToExplore }: VerificationStatusScreenProps) {
+  const router = useRouter();
   const { status, isLoading, error, reload } = useVerificationStatus();
 
   if (isLoading) {
@@ -67,7 +69,11 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
       <Ionicons name="hourglass-outline" size={64} color={colors.orange} style={styles.icon} />
       <Text style={styles.title}>¡Gracias! Estamos revisando tu documento</Text>
       <Text style={styles.subtitle}>Esto puede tardar hasta 24 horas. Te avisamos en cuanto esté listo.</Text>
-      <TouchableOpacity style={styles.buttonSecondary} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.buttonSecondary}
+        onPress={() => router.push('/(app)/profile')}
+        activeOpacity={0.8}
+      >
         <Text style={styles.buttonSecondaryLabel}>Entendido</Text>
       </TouchableOpacity>
     </SafeAreaView>

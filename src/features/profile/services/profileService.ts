@@ -3,6 +3,7 @@ import type {
   MyProfile,
   PublicProfile,
   ProfilePhoto,
+  ProfileSettings,
 } from '../types/profile.types';
 import type { EditProfileFormData } from '../schemas/editProfileSchema';
 
@@ -55,5 +56,15 @@ export const profileService = {
 
   async deleteVideo(): Promise<void> {
     await api.delete('/profiles/me/video');
+  },
+
+  async getSettings(): Promise<ProfileSettings> {
+    const { data } = await api.get<{ data: ProfileSettings }>('/profiles/me/settings');
+    return data.data;
+  },
+
+  async updateSettings(payload: Partial<Omit<ProfileSettings, 'id'>>): Promise<ProfileSettings> {
+    const { data } = await api.patch<{ data: ProfileSettings }>('/profiles/me/settings', payload);
+    return data.data;
   },
 };

@@ -27,11 +27,6 @@ describe('useSubmitVerification', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (manipulateAsync as jest.Mock).mockResolvedValue({ uri: 'file://ine-compressed.jpg' });
-    (verificationService.getPresignedUrl as jest.Mock).mockResolvedValue({
-      upload_url: 'https://s3.example.com/upload',
-      key: 'verification/profile-1/req-1/document.jpg',
-    });
-    (verificationService.uploadToS3 as jest.Mock).mockResolvedValue(undefined);
     (verificationService.submit as jest.Mock).mockResolvedValue({
       id: 'req-1',
       status: 'pending',
@@ -41,7 +36,7 @@ describe('useSubmitVerification', () => {
     });
   });
 
-  it('sube el documento a S3 y envía la solicitud tras seleccionar una foto', async () => {
+  it('envía el documento comprimido directo al backend tras seleccionar una foto', async () => {
     const onSubmitted = jest.fn();
     const { result } = renderHook(() => useSubmitVerification({ onSubmitted }));
 
@@ -52,12 +47,7 @@ describe('useSubmitVerification', () => {
       await result.current.handleSubmit();
     });
 
-    expect(verificationService.getPresignedUrl).toHaveBeenCalledWith('document');
-    expect(verificationService.uploadToS3).toHaveBeenCalledWith(
-      'https://s3.example.com/upload',
-      'file://ine-compressed.jpg',
-    );
-    expect(verificationService.submit).toHaveBeenCalledWith('verification/profile-1/req-1/document.jpg');
+    expect(verificationService.submit).toHaveBeenCalledWith('file://ine-compressed.jpg');
     expect(onSubmitted).toHaveBeenCalledTimes(1);
     expect(result.current.state).toBe('done');
     expect(result.current.error).toBeNull();
@@ -70,7 +60,7 @@ describe('useSubmitVerification', () => {
       await result.current.handleSubmit();
     });
 
-    expect(verificationService.getPresignedUrl).not.toHaveBeenCalled();
+    expect(verificationService.submit).not.toHaveBeenCalled();
     expect(result.current.error).toBe('Selecciona una foto de tu INE antes de enviar.');
   });
 

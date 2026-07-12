@@ -58,3 +58,14 @@ export interface VideoPresignedUrl {
   upload_url: string;
   video_key: string;
 }
+
+export interface ProfileSettings {
+  id: string;
+  selfie_verification_enabled: boolean;
+  incognito_mode_enabled: boolean;
+  geo_block_enabled: boolean;
+  reports_enabled: boolean;
+  notify_matches_enabled: boolean;
+  notify_messages_enabled: boolean;
+  notify_events_enabled: boolean;
+}

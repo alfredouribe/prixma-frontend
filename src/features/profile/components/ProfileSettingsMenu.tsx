@@ -1,42 +1,52 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { surfaces, text, typography, spacing, colors } from '../../../lib/theme';
 import { useLogout } from '../../auth/hooks/useLogout';
 import type { ProfileVerificationStatus } from '../types/profile.types';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 const MENU_ITEMS = [
   {
     key: 'privacy',
     label: 'Privacidad y visibilidad',
     description: 'Modo incógnito, bloqueo geo',
-    icon: '👁',
+    icon: 'eye-outline' as IoniconName,
+    iconColor: colors.purple,
     iconBg: `${colors.purple}18`,
   },
   {
     key: 'verification',
     label: 'Verificación',
     description: 'Perfil verificado ✓',
-    icon: '🔒',
+    icon: 'lock-closed-outline' as IoniconName,
+    iconColor: colors.green,
     iconBg: `${colors.green}18`,
   },
   {
     key: 'notifications',
     label: 'Notificaciones',
     description: 'Matches, mensajes, eventos',
-    icon: '🔔',
+    icon: 'notifications-outline' as IoniconName,
+    iconColor: colors.rose,
     iconBg: `${colors.rose}18`,
   },
   {
     key: 'premium',
     label: 'Prixma+',
     description: 'Actualiza tu plan',
-    icon: '⭐',
+    icon: 'sparkles-outline' as IoniconName,
+    iconColor: colors.yellow,
     iconBg: `${colors.yellow}18`,
   },
 ] as const;
 
 const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> = {
+  privacy: '/profile/privacy',
   verification: '/profile/verification',
+  notifications: '/profile/notifications',
 };
 
 interface ProfileSettingsMenuProps {
@@ -68,7 +78,7 @@ export function ProfileSettingsMenu({ verificationStatus }: ProfileSettingsMenuP
             }}
           >
             <View style={[styles.iconSquare, { backgroundColor: item.iconBg }]}>
-              <Text style={styles.iconText}>{item.icon}</Text>
+              <Ionicons name={item.icon} size={18} color={item.iconColor} />
             </View>
             <View style={styles.rowContent}>
               <Text style={styles.rowLabel}>{item.label}</Text>
@@ -86,7 +96,7 @@ export function ProfileSettingsMenu({ verificationStatus }: ProfileSettingsMenuP
         activeOpacity={0.7}
       >
         <View style={[styles.iconSquare, { backgroundColor: surfaces.elevated }]}>
-          <Text style={styles.iconText}>🚪</Text>
+          <Ionicons name="log-out-outline" size={18} color={colors.rose} />
         </View>
         <Text style={styles.logoutText}>Cerrar sesión</Text>
         <Text style={styles.chevron}>›</Text>
@@ -118,9 +128,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-  },
-  iconText: {
-    fontSize: 16,
   },
   rowContent: {
     flex: 1,

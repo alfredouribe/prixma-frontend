@@ -5,18 +5,10 @@
  */
 export type VerificationRequestStatus = 'pending' | 'approved' | 'rejected';
 
-/** Tipo de archivo que se sube al bucket privado de verificación. */
-export type VerificationDocumentType = 'document' | 'selfie';
-
 export interface VerificationStatusData {
   id: string;
   status: VerificationRequestStatus;
   rejection_reason: string | null;
   reviewed_at: string | null;
   created_at: string;
-}
-
-export interface VerificationPresignedUrl {
-  upload_url: string;
-  key: string;
 }

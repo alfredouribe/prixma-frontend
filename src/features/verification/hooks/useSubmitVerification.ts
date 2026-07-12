@@ -68,11 +68,8 @@ export function useSubmitVerification({ onSubmitted }: UseSubmitVerificationProp
         { compress: 0.85, format: SaveFormat.JPEG },
       );
 
-      const { upload_url, key } = await verificationService.getPresignedUrl('document');
-      await verificationService.uploadToS3(upload_url, compressed.uri);
-
       setState('submitting');
-      await verificationService.submit(key);
+      await verificationService.submit(compressed.uri);
 
       setState('done');
       onSubmitted?.();
