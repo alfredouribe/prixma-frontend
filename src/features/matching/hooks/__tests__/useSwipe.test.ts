@@ -13,6 +13,7 @@ const mockProfile: ExploreProfile = {
   gender_identities: ['non_binary'],
   orientations: ['queer'],
   city: 'CDMX',
+  bio: null,
   intention: 'friendship',
   is_verified: true,
   has_video: false,

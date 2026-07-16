@@ -4,21 +4,33 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   interpolate,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import type { ExploreProfile, SwipeDirection } from '../types/matching.types';
+import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
+import type { ExploreProfile, Intention, SwipeDirection } from '../types/matching.types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.35;
 const SWIPE_UP_THRESHOLD = 100;
 
-const INTENTION_LABELS: Record<string, string> = {
+const INTENTION_LABELS: Record<Intention, string> = {
   partner: 'Busca pareja',
   friendship: 'Busca amistad',
   community: 'Busca comunidad',
   mentorship: 'Busca mentoría',
+};
+
+// Badge de intención sobre la foto — mapeo independiente del de CardActions
+// (ese usa Ionicons y la intención del usuario autenticado; este usa emoji
+// de texto y la intención del perfil que se está viendo). Ver spec.md.
+const INTENTION_EMOJI: Record<Intention, string> = {
+  partner: '❤️',
+  friendship: '👥',
+  community: '🤝',
+  mentorship: '✨',
 };
 
 interface ProfileCardProps {
@@ -59,17 +71,17 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
           if (movedRight) {
             translateX.value = withSpring(SCREEN_WIDTH * 1.5, {}, (finished) => {
               'worklet';
-              if (finished) onSwipe('like');
+              if (finished) runOnJS(onSwipe)('like');
             });
           } else if (movedLeft) {
             translateX.value = withSpring(-SCREEN_WIDTH * 1.5, {}, (finished) => {
               'worklet';
-              if (finished) onSwipe('dislike');
+              if (finished) runOnJS(onSwipe)('dislike');
             });
           } else if (movedUp) {
             translateY.value = withSpring(-SCREEN_WIDTH * 1.5, {}, (finished) => {
               'worklet';
-              if (finished) onSwipe('super_like');
+              if (finished) runOnJS(onSwipe)('super_like');
             });
           } else {
             translateX.value = withSpring(0);
@@ -95,6 +107,7 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
   });
 
   const currentPhoto = photos[photoIndex]?.url ?? null;
+  const visibleInterests = profile.interests.slice(0, 3);
 
   return (
     <GestureDetector gesture={pan}>
@@ -105,7 +118,7 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
             <Image source={{ uri: currentPhoto }} style={styles.photo} resizeMode="cover" />
           ) : (
             <View style={[styles.photo, styles.photoPlaceholder]}>
-              <Ionicons name="person" size={96} color="#3a3a4a" />
+              <Ionicons name="person" size={96} color={surfaces.muted} />
             </View>
           )}
 
@@ -130,22 +143,21 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
             </View>
           )}
 
-          {/* Badges */}
-          <View style={styles.badgesOverlay}>
-            {profile.is_verified && (
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={14} color="#33d17a" />
-                <Text style={styles.verifiedText}>✓ Verificade</Text>
-              </View>
-            )}
-            {profile.intention && (
-              <View style={styles.intentionBadge}>
-                <Text style={styles.intentionText}>
-                  {INTENTION_LABELS[profile.intention] ?? profile.intention}
-                </Text>
-              </View>
-            )}
-          </View>
+          {/* Verified badge — pill sólido verde, top-right */}
+          {profile.is_verified && (
+            <View style={styles.verifiedBadge}>
+              <Text style={styles.verifiedText}>✓ Verificade</Text>
+            </View>
+          )}
+
+          {/* Intention badge — pill oscuro translúcido, bottom-left */}
+          {profile.intention && (
+            <View style={styles.intentionBadge}>
+              <Text style={styles.intentionText}>
+                {INTENTION_EMOJI[profile.intention]} {INTENTION_LABELS[profile.intention]}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Info */}
@@ -154,19 +166,33 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
             <Text style={styles.name}>
               {profile.display_name}, {profile.age}
             </Text>
-            {profile.has_video && (
-              <Ionicons name="play-circle-outline" size={22} color="#9b5dff" />
+            {profile.pronouns.length > 0 && (
+              <View style={styles.pronounsBadge}>
+                <Text style={styles.pronounsText}>{profile.pronouns.join(' / ')}</Text>
+              </View>
             )}
           </View>
-
-          {profile.pronouns.length > 0 && (
-            <Text style={styles.pronouns}>{profile.pronouns.join(' · ')}</Text>
-          )}
 
           <Text style={styles.identity}>
             {[...profile.gender_identities, ...profile.orientations].join(' · ')}
             {profile.city ? ` · ${profile.city}` : ''}
           </Text>
+
+          {profile.bio && (
+            <Text style={styles.bio} numberOfLines={1}>
+              {profile.bio}
+            </Text>
+          )}
+
+          {visibleInterests.length > 0 && (
+            <View style={styles.chips}>
+              {visibleInterests.map((interest) => (
+                <View key={interest} style={styles.chip}>
+                  <Text style={styles.chipText}>{interest}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </Animated.View>
     </GestureDetector>
@@ -175,10 +201,10 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#17171f',
-    borderRadius: 24,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.card,
     overflow: 'hidden',
-    shadowColor: '#9b5dff',
+    shadowColor: colors.purple,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
@@ -192,10 +218,10 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#2a2a38',
+    backgroundColor: surfaces.border,
   },
   photoPlaceholder: {
-    backgroundColor: '#2a2a38',
+    backgroundColor: surfaces.border,
   },
   photoNavLeft: {
     position: 'absolute',
@@ -213,7 +239,7 @@ const styles = StyleSheet.create({
   },
   dots: {
     position: 'absolute',
-    top: 12,
+    top: spacing.md,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -227,67 +253,91 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.4)',
   },
   dotActive: {
-    backgroundColor: '#ffffff',
-  },
-  badgesOverlay: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    flexDirection: 'row',
-    gap: 8,
+    backgroundColor: colors.white,
   },
   verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(51, 209, 122, 0.15)',
-    borderWidth: 0.5,
-    borderColor: '#33d17a',
-    borderRadius: 9999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    backgroundColor: colors.green,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   verifiedText: {
     fontFamily: 'PoppinsRounded-Medium',
-    fontSize: 11,
-    color: '#33d17a',
+    fontSize: typography.caption.fontSize,
+    color: colors.white,
   },
   intentionBadge: {
-    backgroundColor: 'rgba(155, 93, 255, 0.15)',
-    borderWidth: 0.5,
-    borderColor: '#9b5dff',
-    borderRadius: 9999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    position: 'absolute',
+    bottom: spacing.md,
+    left: spacing.md,
+    backgroundColor: 'rgba(13,13,20,0.7)',
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   intentionText: {
     fontFamily: 'PoppinsRounded-Medium',
-    fontSize: 11,
-    color: '#9b5dff',
+    fontSize: typography.small.fontSize,
+    color: colors.white,
   },
   info: {
-    padding: 16,
+    padding: spacing.lg,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   name: {
     fontFamily: 'PoppinsRounded-SemiBold',
     fontSize: 20,
-    color: '#ffffff',
+    color: text.primary,
   },
-  pronouns: {
-    fontFamily: 'PoppinsRounded-Regular',
-    fontSize: 13,
-    color: '#a0a0b8',
-    marginBottom: 4,
+  pronounsBadge: {
+    backgroundColor: 'rgba(155, 93, 255, 0.15)',
+    borderWidth: 0.5,
+    borderColor: colors.purple,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  pronounsText: {
+    fontFamily: 'PoppinsRounded-Medium',
+    fontSize: typography.caption.fontSize,
+    color: colors.purple,
   },
   identity: {
     fontFamily: 'PoppinsRounded-Regular',
-    fontSize: 13,
-    color: '#a0a0b8',
+    fontSize: typography.small.fontSize,
+    color: text.secondary,
+    marginBottom: spacing.xs,
+  },
+  bio: {
+    fontFamily: 'PoppinsRounded-Regular',
+    fontSize: typography.small.fontSize,
+    color: text.secondary,
+    marginBottom: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  chip: {
+    backgroundColor: surfaces.bg,
+    borderWidth: 0.5,
+    borderColor: surfaces.border,
+    borderRadius: radius.full,
+    paddingHorizontal: 14,
+    paddingVertical: spacing.sm,
+  },
+  chipText: {
+    fontFamily: 'PoppinsRounded-Medium',
+    fontSize: typography.small.fontSize,
+    color: text.secondary,
   },
 });

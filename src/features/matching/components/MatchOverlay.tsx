@@ -1,4 +1,11 @@
+import { useEffect } from 'react';
 import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { ExploreProfile } from '../types/matching.types';
 
 interface MatchOverlayProps {
@@ -7,7 +14,11 @@ interface MatchOverlayProps {
   otherProfile: ExploreProfile;
   onSendMessage: () => void;
   onKeepExploring: () => void;
+  onViewFull: () => void;
 }
+
+// Match overlay: scale + fade, 400ms — design-system.md → "Animation Guidelines"
+const ANIMATION_DURATION = 400;
 
 export function MatchOverlay({
   visible,
@@ -15,13 +26,32 @@ export function MatchOverlay({
   otherProfile,
   onSendMessage,
   onKeepExploring,
+  onViewFull,
 }: MatchOverlayProps) {
   const otherPhoto = otherProfile.photos[0]?.url ?? null;
+
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.85);
+
+  useEffect(() => {
+    if (visible) {
+      opacity.value = withTiming(1, { duration: ANIMATION_DURATION });
+      scale.value = withTiming(1, { duration: ANIMATION_DURATION });
+    } else {
+      opacity.value = 0;
+      scale.value = 0.85;
+    }
+  }, [visible, opacity, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, animatedStyle]}>
           <Text style={styles.title}>¡Es un match! 🌟</Text>
           <Text style={styles.subtitle}>
             Tú y {otherProfile.display_name} se gustaron mutuamente.
@@ -56,7 +86,11 @@ export function MatchOverlay({
           >
             <Text style={styles.secondaryButtonText}>Seguir explorando</Text>
           </TouchableOpacity>
-        </View>
+
+          <TouchableOpacity onPress={onViewFull} accessibilityRole="button">
+            <Text style={styles.viewFullLink}>Ver perfil completo →</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -68,71 +102,72 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
   },
   card: {
-    backgroundColor: '#17171f',
-    borderRadius: 24,
-    padding: 32,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.card,
+    padding: spacing.xxl,
     alignItems: 'center',
     width: '100%',
   },
   title: {
-    fontFamily: 'PoppinsRounded-Bold',
-    fontSize: 26,
-    color: '#ffffff',
+    ...typography.h1,
+    color: text.primary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontFamily: 'PoppinsRounded-Regular',
-    fontSize: 15,
-    color: '#a0a0b8',
+    ...typography.body,
+    color: text.secondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
   },
   avatars: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
   },
   avatar: {
     width: 88,
     height: 88,
     borderRadius: 44,
     borderWidth: 3,
-    borderColor: '#9b5dff',
+    borderColor: colors.purple,
   },
   avatarPlaceholder: {
-    backgroundColor: '#2a2a38',
+    backgroundColor: surfaces.border,
   },
   avatarSeparator: {
-    width: 12,
+    width: spacing.md,
   },
   primaryButton: {
-    backgroundColor: '#9b5dff',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: colors.purple,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   primaryButtonText: {
-    fontFamily: 'PoppinsRounded-SemiBold',
-    fontSize: 15,
-    color: '#ffffff',
+    ...typography.button,
+    color: colors.white,
   },
   secondaryButton: {
-    borderRadius: 14,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
-    borderColor: '#9b5dff',
-    paddingVertical: 16,
+    borderColor: colors.purple,
+    paddingVertical: spacing.lg,
     width: '100%',
     alignItems: 'center',
   },
   secondaryButtonText: {
-    fontFamily: 'PoppinsRounded-SemiBold',
-    fontSize: 15,
-    color: '#9b5dff',
+    ...typography.button,
+    color: colors.purple,
+  },
+  viewFullLink: {
+    ...typography.small,
+    color: text.tertiary,
+    marginTop: spacing.md,
   },
 });

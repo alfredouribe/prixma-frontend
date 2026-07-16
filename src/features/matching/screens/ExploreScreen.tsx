@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '../../../stores/authStore';
+import { useMyProfile } from '../../profile/hooks/useMyProfile';
 import { CardActions } from '../components/CardActions';
 import { EmptyExplore } from '../components/EmptyExplore';
 import { FilterSheet } from '../components/FilterSheet';
@@ -12,7 +15,10 @@ import { useMatchingPreferences } from '../hooks/useMatchingPreferences';
 import { useSwipe } from '../hooks/useSwipe';
 
 export function ExploreScreen() {
+  const router = useRouter();
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const intention = useAuthStore((s) => s.user?.intention ?? null);
+  const { profile: myProfile } = useMyProfile();
 
   const { currentProfile, isEmpty, isLoading, advance, refresh } = useExploreQueue();
   const { preferences, updatePreferences } = useMatchingPreferences();
@@ -72,12 +78,14 @@ export function ExploreScreen() {
 
         {/* Actions */}
         <CardActions
+          intention={intention}
           onSkip={() => swipe(currentProfile, 'dislike')}
           onMessage={() => {
             // Message without match — opens solicitud flow (Chat feature)
           }}
           onLike={() => swipe(currentProfile, 'like')}
           onSuperLike={() => swipe(currentProfile, 'super_like')}
+          hasVideo={currentProfile.has_video}
           disabled={isSwiping}
         />
 
@@ -85,13 +93,26 @@ export function ExploreScreen() {
         {matchResult && (
           <MatchOverlay
             visible={true}
-            myPhoto={null}
+            myPhoto={myProfile?.photo_url ?? null}
             otherProfile={matchResult.otherProfile}
             onSendMessage={() => {
               dismissMatch();
-              // Navigate to chat — Chat feature
+              router.push('/(app)/chats');
             }}
             onKeepExploring={dismissMatch}
+            onViewFull={() => {
+              const otherProfile = matchResult.otherProfile;
+              dismissMatch();
+              router.push({
+                pathname: '/(app)/match/[id]',
+                params: {
+                  id: matchResult.matchId,
+                  name: otherProfile.display_name,
+                  photo: otherProfile.photos[0]?.url ?? '',
+                  myPhoto: myProfile?.photo_url ?? '',
+                },
+              });
+            }}
           />
         )}
 

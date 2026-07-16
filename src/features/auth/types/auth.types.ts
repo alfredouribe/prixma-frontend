@@ -1,3 +1,5 @@
+import type { Intention } from '../../matching/types/matching.types';
+
 export interface User {
   id: string;
   email: string;
@@ -5,6 +7,7 @@ export interface User {
   onboarding_completed: boolean;
   email_verified_at: string | null;
   created_at: string;
+  intention: Intention | null;
 }
 
 export interface AuthResponse {

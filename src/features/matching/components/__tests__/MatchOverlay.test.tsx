@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { MatchOverlay } from '../MatchOverlay';
 import type { ExploreProfile } from '../../types/matching.types';
 
@@ -10,6 +10,7 @@ const mockProfile: ExploreProfile = {
   gender_identities: ['woman'],
   orientations: ['bisexual'],
   city: 'Guadalajara',
+  bio: null,
   intention: 'partner',
   is_verified: false,
   has_video: false,
@@ -26,6 +27,7 @@ describe('MatchOverlay', () => {
         otherProfile={mockProfile}
         onSendMessage={jest.fn()}
         onKeepExploring={jest.fn()}
+        onViewFull={jest.fn()}
       />,
     );
 
@@ -41,6 +43,7 @@ describe('MatchOverlay', () => {
         otherProfile={mockProfile}
         onSendMessage={jest.fn()}
         onKeepExploring={jest.fn()}
+        onViewFull={jest.fn()}
       />,
     );
 
@@ -57,10 +60,11 @@ describe('MatchOverlay', () => {
         otherProfile={mockProfile}
         onSendMessage={jest.fn()}
         onKeepExploring={onKeepExploring}
+        onViewFull={jest.fn()}
       />,
     );
 
-    getByText('Seguir explorando').props.onPress?.();
+    fireEvent.press(getByText('Seguir explorando'));
     expect(onKeepExploring).toHaveBeenCalledTimes(1);
   });
 
@@ -73,10 +77,30 @@ describe('MatchOverlay', () => {
         otherProfile={mockProfile}
         onSendMessage={onSendMessage}
         onKeepExploring={jest.fn()}
+        onViewFull={jest.fn()}
       />,
     );
 
-    getByText('Enviar mensaje').props.onPress?.();
+    fireEvent.press(getByText('Enviar mensaje'));
     expect(onSendMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('muestra el link "Ver perfil completo →" y llama a onViewFull al tocarlo', () => {
+    const onViewFull = jest.fn();
+    const { getByText } = render(
+      <MatchOverlay
+        visible={true}
+        myPhoto={null}
+        otherProfile={mockProfile}
+        onSendMessage={jest.fn()}
+        onKeepExploring={jest.fn()}
+        onViewFull={onViewFull}
+      />,
+    );
+
+    const link = getByText('Ver perfil completo →');
+    expect(link).toBeTruthy();
+    fireEvent.press(link);
+    expect(onViewFull).toHaveBeenCalledTimes(1);
   });
 });

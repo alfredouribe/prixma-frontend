@@ -10,6 +10,7 @@ export interface ExploreProfile {
   gender_identities: string[];
   orientations: string[];
   city: string | null;
+  bio: string | null;
   intention: Intention | null;
   is_verified: boolean;
   has_video: boolean;

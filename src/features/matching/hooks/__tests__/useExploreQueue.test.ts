@@ -14,6 +14,7 @@ function makeProfile(id: string): ExploreProfile {
     gender_identities: [],
     orientations: [],
     city: 'CDMX',
+    bio: null,
     intention: 'friendship',
     is_verified: false,
     has_video: false,
