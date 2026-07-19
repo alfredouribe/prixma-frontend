@@ -14,8 +14,8 @@ interface IntentionConfig {
 
 const INTENTION_CONFIG: Record<Intention, IntentionConfig> = {
   partner: { icon: 'heart', color: colors.rose, shadowColor: colors.rose },
-  friendship: { icon: 'star', color: colors.yellow, shadowColor: colors.yellow },
-  community: { icon: 'people', color: colors.green, shadowColor: colors.green },
+  friendship: { icon: 'people', color: colors.yellow, shadowColor: colors.yellow },
+  community: { icon: 'hand-left', color: colors.green, shadowColor: colors.green },
   mentorship: { icon: 'sparkles', color: colors.blue, shadowColor: colors.blue },
 };
 
@@ -38,7 +38,6 @@ export function getIntentionConfig(intention: Intention | null): IntentionConfig
 interface CardActionsProps {
   intention: Intention | null;
   onSkip: () => void;
-  onMessage: () => void;
   onLike: () => void;
   onSuperLike: () => void;
   hasVideo?: boolean;
@@ -48,7 +47,6 @@ interface CardActionsProps {
 export function CardActions({
   intention,
   onSkip,
-  onMessage,
   onLike,
   onSuperLike,
   hasVideo,
@@ -66,16 +64,6 @@ export function CardActions({
         accessibilityRole="button"
       >
         <Ionicons name="close" size={28} color={colors.white} />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.message]}
-        onPress={onMessage}
-        disabled={disabled}
-        accessibilityLabel="Mensaje directo"
-        accessibilityRole="button"
-      >
-        <Ionicons name="chatbubble-outline" size={22} color={colors.blue} />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -142,11 +130,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: radius.full,
-  },
-  message: {
-    backgroundColor: surfaces.card,
-    borderWidth: 1.5,
-    borderColor: colors.blue,
   },
   like: {
     width: 64,

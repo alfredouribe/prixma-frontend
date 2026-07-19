@@ -1,4 +1,5 @@
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, surfaces, typography, radius, spacing } from '../../../lib/theme';
 import type { MyProfile, PublicProfile } from '../types/profile.types';
@@ -19,15 +20,31 @@ const INTENTION_LABELS: Record<string, string> = {
 };
 
 export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
-  const photoUrl = profile.photos?.[0]?.url ?? profile.photo_url;
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const photos = profile.photos ?? [];
+  // El carrusel navegable (tap izquierda/derecha + dots) solo aplica al perfil
+  // ajeno — en perfil propio (MyProfileScreen) siempre se muestra la foto
+  // principal, igual que antes, para no cambiar ese comportamiento ya probado.
+  const carouselEnabled = !isOwn && photos.length > 1;
+  const activePhoto = !isOwn ? photos[photoIndex]?.url : photos[0]?.url;
+  const photoUrl = activePhoto ?? profile.photo_url;
   const isVerified = isOwn
     ? (profile as MyProfile).verification_status === 'verified'
     : (profile as PublicProfile).is_verified;
+  const age = !isOwn ? (profile as PublicProfile).age : null;
+  const displayName = age ? `${profile.display_name}, ${age}` : profile.display_name;
 
   const pronounText = profile.pronouns?.map((p) => p.label).join(' / ');
   const identityText = profile.gender_identities?.map((g) => g.label).join(', ');
   const orientationText = profile.orientations?.map((o) => o.label).join(', ');
   const identityLine = [pronounText, identityText, orientationText].filter(Boolean).join(' · ');
+
+  function goToPhoto(direction: 'prev' | 'next') {
+    setPhotoIndex((i) => {
+      if (direction === 'next') return Math.min(i + 1, photos.length - 1);
+      return Math.max(i - 1, 0);
+    });
+  }
 
   return (
     <View style={styles.container}>
@@ -39,6 +56,26 @@ export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
         </View>
       )}
 
+      {carouselEnabled && (
+        <>
+          <TouchableOpacity
+            style={styles.navLeft}
+            onPress={() => goToPhoto('prev')}
+            accessibilityLabel="Foto anterior"
+          />
+          <TouchableOpacity
+            style={styles.navRight}
+            onPress={() => goToPhoto('next')}
+            accessibilityLabel="Foto siguiente"
+          />
+          <View style={styles.dots}>
+            {photos.map((_, i) => (
+              <View key={i} style={[styles.dot, i === photoIndex && styles.dotActive]} />
+            ))}
+          </View>
+        </>
+      )}
+
       <LinearGradient
         colors={['transparent', 'rgba(13,13,20,0.6)', 'rgba(13,13,20,0.92)']}
         locations={[0.35, 0.68, 1]}
@@ -48,7 +85,7 @@ export function ProfileHeader({ profile, isOwn = false }: ProfileHeaderProps) {
 
       <View style={styles.info} pointerEvents="box-none">
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{profile.display_name}</Text>
+          <Text style={styles.name}>{displayName}</Text>
           {isVerified && (
             <View style={styles.verifiedBadge}>
               <Text style={styles.verifiedText}>✓ Verificade</Text>
@@ -102,6 +139,41 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+  },
+  navLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '40%',
+    zIndex: 1,
+  },
+  navRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '60%',
+    zIndex: 1,
+  },
+  dots: {
+    position: 'absolute',
+    top: spacing.md,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    zIndex: 2,
+  },
+  dot: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  dotActive: {
+    backgroundColor: colors.white,
   },
   info: {
     position: 'absolute',

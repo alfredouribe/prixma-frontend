@@ -34,6 +34,22 @@ const MENU_ITEMS = [
     iconBg: `${colors.rose}18`,
   },
   {
+    key: 'blocked',
+    label: 'Bloqueades',
+    description: 'Perfiles que ya no verás',
+    icon: 'person-remove-outline' as IoniconName,
+    iconColor: colors.blue,
+    iconBg: `${colors.blue}18`,
+  },
+  {
+    key: 'geoBlocks',
+    label: 'Bloqueo geográfico',
+    description: 'Oculta tu perfil en zonas específicas',
+    icon: 'location-outline' as IoniconName,
+    iconColor: colors.orange,
+    iconBg: `${colors.orange}18`,
+  },
+  {
     key: 'premium',
     label: 'Prixma+',
     description: 'Actualiza tu plan',
@@ -47,6 +63,8 @@ const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> =
   privacy: '/profile/privacy',
   verification: '/profile/verification',
   notifications: '/profile/notifications',
+  blocked: '/profile/blocked',
+  geoBlocks: '/profile/geo-blocks',
 };
 
 interface ProfileSettingsMenuProps {

@@ -27,107 +27,88 @@ export function ExploreScreen() {
     onSwipeComplete: advance,
   });
 
-  if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#9b5dff" />
-      </View>
-    );
-  }
-
-  if (isEmpty || !currentProfile) {
-    return (
-      <>
-        <EmptyExplore onOpenFilters={() => setFiltersVisible(true)} />
-        {preferences && (
-          <FilterSheet
-            visible={filtersVisible}
-            preferences={preferences}
-            onApply={async (prefs) => {
-              await updatePreferences(prefs);
-              refresh();
-            }}
-            onClose={() => setFiltersVisible(false)}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>prixma</Text>
-          <TouchableOpacity
-            onPress={() => setFiltersVisible(true)}
-            accessibilityLabel="Abrir filtros"
-            accessibilityRole="button"
-          >
-            <Ionicons name="options-outline" size={24} color="#ffffff" />
-          </TouchableOpacity>
+      {isLoading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#9b5dff" />
         </View>
+      ) : isEmpty || !currentProfile ? (
+        <EmptyExplore onOpenFilters={() => setFiltersVisible(true)} />
+      ) : (
+        <>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.logo}>prixma</Text>
+            <TouchableOpacity
+              onPress={() => setFiltersVisible(true)}
+              accessibilityLabel="Abrir filtros"
+              accessibilityRole="button"
+            >
+              <Ionicons name="options-outline" size={24} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
 
-        {/* Card */}
-        <View style={styles.cardContainer}>
-          <ProfileCard
-            profile={currentProfile}
-            onSwipe={(direction) => swipe(currentProfile, direction)}
+          {/* Card */}
+          <View style={styles.cardContainer}>
+            <ProfileCard
+              key={currentProfile.id}
+              profile={currentProfile}
+              onSwipe={(direction) => swipe(currentProfile, direction)}
+            />
+          </View>
+
+          {/* Actions */}
+          <CardActions
+            intention={intention}
+            onSkip={() => swipe(currentProfile, 'dislike')}
+            onLike={() => swipe(currentProfile, 'like')}
+            onSuperLike={() => swipe(currentProfile, 'super_like')}
+            hasVideo={currentProfile.has_video}
+            disabled={isSwiping}
           />
-        </View>
 
-        {/* Actions */}
-        <CardActions
-          intention={intention}
-          onSkip={() => swipe(currentProfile, 'dislike')}
-          onMessage={() => {
-            // Message without match — opens solicitud flow (Chat feature)
+          {/* Match Overlay */}
+          {matchResult && (
+            <MatchOverlay
+              visible={true}
+              myPhoto={myProfile?.photo_url ?? null}
+              otherProfile={matchResult.otherProfile}
+              onSendMessage={() => {
+                dismissMatch();
+                router.push('/(app)/chats');
+              }}
+              onKeepExploring={dismissMatch}
+              onViewFull={() => {
+                const otherProfile = matchResult.otherProfile;
+                dismissMatch();
+                router.push({
+                  pathname: '/(app)/match/[id]',
+                  params: {
+                    id: matchResult.matchId,
+                    name: otherProfile.display_name,
+                    photo: otherProfile.photos[0]?.url ?? '',
+                    myPhoto: myProfile?.photo_url ?? '',
+                  },
+                });
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Filter Sheet — shared across empty and normal states */}
+      {preferences && (
+        <FilterSheet
+          visible={filtersVisible}
+          preferences={preferences}
+          onApply={async (prefs) => {
+            await updatePreferences(prefs);
+            refresh();
           }}
-          onLike={() => swipe(currentProfile, 'like')}
-          onSuperLike={() => swipe(currentProfile, 'super_like')}
-          hasVideo={currentProfile.has_video}
-          disabled={isSwiping}
+          onClose={() => setFiltersVisible(false)}
         />
-
-        {/* Match Overlay */}
-        {matchResult && (
-          <MatchOverlay
-            visible={true}
-            myPhoto={myProfile?.photo_url ?? null}
-            otherProfile={matchResult.otherProfile}
-            onSendMessage={() => {
-              dismissMatch();
-              router.push('/(app)/chats');
-            }}
-            onKeepExploring={dismissMatch}
-            onViewFull={() => {
-              const otherProfile = matchResult.otherProfile;
-              dismissMatch();
-              router.push({
-                pathname: '/(app)/match/[id]',
-                params: {
-                  id: matchResult.matchId,
-                  name: otherProfile.display_name,
-                  photo: otherProfile.photos[0]?.url ?? '',
-                  myPhoto: myProfile?.photo_url ?? '',
-                },
-              });
-            }}
-          />
-        )}
-
-        {/* Filter Sheet */}
-        {preferences && (
-          <FilterSheet
-            visible={filtersVisible}
-            preferences={preferences}
-            onApply={async (prefs) => {
-              await updatePreferences(prefs);
-              refresh();
-            }}
-            onClose={() => setFiltersVisible(false)}
-          />
-        )}
+      )}
     </SafeAreaView>
   );
 }

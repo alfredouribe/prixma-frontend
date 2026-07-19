@@ -50,6 +50,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="chat/[id]"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: 'Explorar',

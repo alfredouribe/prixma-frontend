@@ -14,6 +14,8 @@ const baseProfile: MyProfile = {
   display_name: 'Kai',
   bio: null,
   city: null,
+  latitude: null,
+  longitude: null,
   intention: null,
   custom_gender_identity: null,
   custom_orientation: null,

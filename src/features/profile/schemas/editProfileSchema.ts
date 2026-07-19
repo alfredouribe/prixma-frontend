@@ -4,6 +4,8 @@ export const editProfileSchema = z.object({
   display_name: z.string().min(1).max(50).optional(),
   bio: z.string().max(300).nullable().optional(),
   city: z.string().max(100).nullable().optional(),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
   intention: z.enum(['partner', 'friendship', 'community', 'mentorship']).optional(),
   gender_identity_ids: z.array(z.string().uuid()).optional(),
   orientation_ids: z.array(z.string().uuid()).optional(),

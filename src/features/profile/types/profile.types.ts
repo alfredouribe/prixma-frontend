@@ -19,6 +19,8 @@ export interface MyProfile {
   display_name: string;
   bio: string | null;
   city: string | null;
+  latitude: number | null;
+  longitude: number | null;
   intention: Intention | null;
   custom_gender_identity: string | null;
   custom_orientation: string | null;
@@ -41,11 +43,14 @@ export interface MyProfile {
 export interface PublicProfile {
   id: string;
   display_name: string;
+  age: number | null;
   bio: string | null;
   city: string | null;
   intention: Intention | null;
   photo_url: string | null;
   video_url: string | null;
+  has_video: boolean;
+  custom_interests: string | null;
   is_verified: boolean;
   gender_identities: CatalogItem[];
   orientations: CatalogItem[];

@@ -8,6 +8,8 @@ export const router = {
 
 export const useRouter = jest.fn(() => router);
 
+export const useLocalSearchParams = jest.fn(() => ({}));
+
 /**
  * Simplificado para tests: corre el callback como un efecto normal de
  * React (una vez al montar, si la referencia es estable) en vez de atarlo

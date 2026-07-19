@@ -31,6 +31,8 @@ export function useEditProfile(initial: MyProfile) {
       display_name: initial.display_name,
       bio: initial.bio ?? '',
       city: initial.city ?? '',
+      latitude: initial.latitude ?? null,
+      longitude: initial.longitude ?? null,
       intention: initial.intention ?? undefined,
       gender_identity_ids: initial.gender_identities?.map((g) => g.id) ?? [],
       orientation_ids: initial.orientations?.map((o) => o.id) ?? [],

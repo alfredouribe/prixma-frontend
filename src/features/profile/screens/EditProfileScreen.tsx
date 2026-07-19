@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useEditProfile } from '../hooks/useEditProfile';
 import { PhotoGallery } from '../components/PhotoGallery';
+import { CityPicker } from '../components/CityPicker';
 import { ChipSelector } from '../../onboarding/components/ChipSelector';
 import { DescribeInput } from '../../onboarding/components/DescribeInput';
 import { TagInput } from '../../onboarding/components/TagInput';
@@ -92,6 +93,8 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
     register('bio');
     register('display_name');
     register('city');
+    register('latitude');
+    register('longitude');
     register('gender_identity_ids');
     register('orientation_ids');
     register('pronoun_ids');
@@ -161,13 +164,15 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
 
         {/* Ciudad */}
         <Field label="Ciudad">
-          <TextInput
-            style={styles.input}
+          <CityPicker
             value={watch('city') ?? ''}
-            onChangeText={(v) => setValue('city', v || null, { shouldValidate: true })}
-            placeholderTextColor={text.tertiary}
-            placeholder="ej. Ciudad de México"
-            maxLength={100}
+            latitude={watch('latitude') ?? null}
+            longitude={watch('longitude') ?? null}
+            onChange={(city, lat, lng) => {
+              setValue('city', city || null, { shouldValidate: true });
+              setValue('latitude', lat, { shouldValidate: true });
+              setValue('longitude', lng, { shouldValidate: true });
+            }}
           />
         </Field>
 
