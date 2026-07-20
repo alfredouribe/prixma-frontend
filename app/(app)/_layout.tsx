@@ -57,6 +57,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="user/[uuid]"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: 'Explorar',

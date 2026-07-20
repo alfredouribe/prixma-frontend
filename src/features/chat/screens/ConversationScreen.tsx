@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -15,7 +17,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConversation } from '../hooks/useConversation';
 import { MessageBubble } from '../components/MessageBubble';
 import { MessageInput } from '../components/MessageInput';
+import { ConversationMenu } from '../components/ConversationMenu';
 import { useAuthStore } from '../../../stores/authStore';
+import { useBlocks } from '../../safety/hooks/useBlocks';
+import { BlockModal } from '../../safety/components/BlockModal';
+import { ReportModal } from '../../safety/components/ReportModal';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { Message } from '../types/chat.types';
 
@@ -37,11 +43,49 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
     sendMessage,
     loadOlderMessages,
   } = useConversation(conversationId);
+  const { blockUser, error: blockError } = useBlocks();
+
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [blockModalVisible, setBlockModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   const other = conversation?.other_user;
   // FlatList invertida: más reciente al fondo, `onEndReached` carga mensajes
   // más antiguos (visualmente hacia arriba).
   const invertedMessages = [...messages].reverse();
+
+  function handleViewProfile() {
+    if (!other) return;
+    setMenuVisible(false);
+    router.push({ pathname: '/(app)/user/[uuid]', params: { uuid: other.id } });
+  }
+
+  function handleOpenReport() {
+    setMenuVisible(false);
+    setReportModalVisible(true);
+  }
+
+  function handleOpenBlock() {
+    setMenuVisible(false);
+    setBlockModalVisible(true);
+  }
+
+  async function handleConfirmBlock() {
+    if (!other) return;
+    setIsBlocking(true);
+    const block = await blockUser(other.id);
+    setIsBlocking(false);
+
+    if (block) {
+      setBlockModalVisible(false);
+      // No router.back(): el usuario no debe poder volver con el botón
+      // atrás del sistema a una conversación que acaba de bloquear.
+      router.replace('/(app)/chats');
+    } else {
+      Alert.alert('', blockError ?? 'Algo salió mal. Revisa tu conexión e intenta de nuevo.');
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -74,6 +118,18 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
             <Text style={styles.name} numberOfLines={1}>
               {other?.display_name ?? '—'}
             </Text>
+
+            {other && (
+              <TouchableOpacity
+                onPress={() => setMenuVisible(true)}
+                style={styles.iconBtn}
+                activeOpacity={0.7}
+                accessibilityLabel="Más opciones"
+                testID="conversation-menu-btn"
+              >
+                <Ionicons name="ellipsis-horizontal" size={20} color={text.primary} />
+              </TouchableOpacity>
+            )}
           </View>
 
           <KeyboardAvoidingView
@@ -105,6 +161,32 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
 
             <MessageInput onSend={sendMessage} isSending={isSending} />
           </KeyboardAvoidingView>
+        </>
+      )}
+
+      {other && (
+        <>
+          <ConversationMenu
+            visible={menuVisible}
+            onClose={() => setMenuVisible(false)}
+            onViewProfile={handleViewProfile}
+            onReport={handleOpenReport}
+            onBlock={handleOpenBlock}
+          />
+
+          <BlockModal
+            visible={blockModalVisible}
+            targetName={other.display_name}
+            isSubmitting={isBlocking}
+            onConfirm={handleConfirmBlock}
+            onClose={() => setBlockModalVisible(false)}
+          />
+
+          <ReportModal
+            visible={reportModalVisible}
+            targetId={other.id}
+            onClose={() => setReportModalVisible(false)}
+          />
         </>
       )}
     </SafeAreaView>
