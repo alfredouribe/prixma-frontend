@@ -27,6 +27,7 @@ export function EventCategoryFilter({ value, onChange }: EventCategoryFilterProp
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.scroll}
       contentContainerStyle={styles.container}
     >
       {FILTER_OPTIONS.map((option) => {
@@ -50,9 +51,15 @@ export function EventCategoryFilter({ value, onChange }: EventCategoryFilterProp
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+    height: 52,
+  },
   container: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.md,
+    alignItems: 'center',
     gap: spacing.sm,
   },
   chip: {
