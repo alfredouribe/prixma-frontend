@@ -4,6 +4,8 @@ import { router } from 'expo-router';
 import { ConversationScreen } from '../ConversationScreen';
 import { useConversation } from '../../hooks/useConversation';
 import { useBlocks } from '../../../safety/hooks/useBlocks';
+import { useReport } from '../../../safety/hooks/useReport';
+import { useReportEvidence } from '../../../safety/hooks/useReportEvidence';
 import type { Conversation } from '../../types/chat.types';
 
 // Factory explícito (no automock): automock forzaría a Jest a cargar el
@@ -15,6 +17,8 @@ jest.mock('../../hooks/useConversation', () => ({
   useConversation: jest.fn(),
 }));
 jest.mock('../../../safety/hooks/useBlocks');
+jest.mock('../../../safety/hooks/useReport');
+jest.mock('../../../safety/hooks/useReportEvidence');
 
 function buildConversation(overrides: Partial<Conversation> = {}): Conversation {
   return {
@@ -56,6 +60,17 @@ describe('ConversationScreen', () => {
       blockUser: jest.fn(),
       unblockUser: jest.fn(),
       reload: jest.fn(),
+    });
+    (useReport as jest.Mock).mockReturnValue({
+      submitReport: jest.fn().mockResolvedValue(true),
+      isLoading: false,
+      error: null,
+    });
+    (useReportEvidence as jest.Mock).mockReturnValue({
+      profile: null,
+      chatMessages: [],
+      chatTotal: null,
+      isLoading: false,
     });
   });
 
@@ -112,7 +127,7 @@ describe('ConversationScreen', () => {
     fireEvent.press(screen.getByTestId('block-confirm-btn'));
 
     await waitFor(() => expect(blockUser).toHaveBeenCalledWith('other-uuid'));
-    expect(router.replace).toHaveBeenCalledWith('/(app)/chats');
+    expect(router.replace).toHaveBeenCalledWith('/(app)/(tabs)/chats');
   });
 
   it('si el bloqueo falla, muestra el error y no navega', async () => {
@@ -136,5 +151,24 @@ describe('ConversationScreen', () => {
     await waitFor(() => expect(blockUser).toHaveBeenCalled());
     expect(alertSpy).toHaveBeenCalledWith('', 'Algo salió mal. Revisa tu conexión e intenta de nuevo.');
     expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('al reportar y confirmar, navega de vuelta a Chats', async () => {
+    const submitReport = jest.fn().mockResolvedValue(true);
+    (useReport as jest.Mock).mockReturnValue({ submitReport, isLoading: false, error: null });
+
+    render(<ConversationScreen conversationId="conv-1" />);
+
+    fireEvent.press(screen.getByTestId('conversation-menu-btn'));
+    fireEvent.press(screen.getByTestId('menu-option-report'));
+    fireEvent.press(screen.getByTestId('report-reason-harassment'));
+    await waitFor(() => {
+      fireEvent.press(screen.getByTestId('report-submit-btn'));
+    });
+
+    await waitFor(() => expect(screen.getByTestId('report-done-btn')).toBeTruthy());
+    fireEvent.press(screen.getByTestId('report-done-btn'));
+
+    expect(router.replace).toHaveBeenCalledWith('/(app)/(tabs)/chats');
   });
 });

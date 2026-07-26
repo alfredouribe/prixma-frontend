@@ -1,9 +1,9 @@
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
-import { EditProfileScreen } from '../../../src/features/profile/screens/EditProfileScreen';
-import { profileService } from '../../../src/features/profile/services/profileService';
-import { colors, surfaces } from '../../../src/lib/theme';
-import type { MyProfile } from '../../../src/features/profile/types/profile.types';
+import { EditProfileScreen } from '../../../../src/features/profile/screens/EditProfileScreen';
+import { profileService } from '../../../../src/features/profile/services/profileService';
+import { colors, surfaces } from '../../../../src/lib/theme';
+import type { MyProfile } from '../../../../src/features/profile/types/profile.types';
 
 export default function EditRoute() {
   const [profile, setProfile] = useState<MyProfile | null>(null);

@@ -76,7 +76,7 @@ export function ExploreScreen() {
               otherProfile={matchResult.otherProfile}
               onSendMessage={() => {
                 dismissMatch();
-                router.push('/(app)/chats');
+                router.push('/(app)/(tabs)/chats');
               }}
               onKeepExploring={dismissMatch}
               onViewFull={() => {

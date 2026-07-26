@@ -1,8 +1,8 @@
 import { TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { MyProfileScreen } from '../../../src/features/profile/screens/MyProfileScreen';
-import { colors, surfaces } from '../../../src/lib/theme';
+import { MyProfileScreen } from '../../../../src/features/profile/screens/MyProfileScreen';
+import { colors, surfaces } from '../../../../src/lib/theme';
 
 export default function ProfileRoute() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function ProfileRoute() {
           headerShadowVisible: false,
           headerRight: () => (
             <TouchableOpacity
-              onPress={() => router.push('/(app)/profile/edit')}
+              onPress={() => router.push('/(app)/(tabs)/profile/edit')}
               activeOpacity={0.7}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >

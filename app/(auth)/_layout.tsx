@@ -6,7 +6,7 @@ export default function AuthLayout() {
   const user = useAuthStore((s) => s.user);
 
   if (isAuthenticated) {
-    return <Redirect href={user?.onboarding_completed ? '/(app)' : '/(onboarding)/identity'} />;
+    return <Redirect href={user?.onboarding_completed ? '/(app)/(tabs)' : '/(onboarding)/identity'} />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

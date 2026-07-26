@@ -65,7 +65,7 @@ export function PublicProfileScreen({ uuid }: PublicProfileScreenProps) {
 
   function goBack() {
     if (from === 'chats') {
-      router.replace('/(app)/chats');
+      router.replace('/(app)/(tabs)/chats');
     } else {
       router.back();
     }
@@ -219,7 +219,9 @@ export function PublicProfileScreen({ uuid }: PublicProfileScreenProps) {
       <ReportModal
         visible={reportModalVisible}
         targetId={profile.id}
+        targetName={profile.display_name}
         onClose={() => setReportModalVisible(false)}
+        onReported={goBack}
       />
     </View>
   );

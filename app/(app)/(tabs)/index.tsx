@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
 
 export default function AppIndexRoute() {
-  return <Redirect href="/(app)/explore" />;
+  return <Redirect href="/(app)/(tabs)/explore" />;
 }

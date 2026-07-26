@@ -35,7 +35,7 @@ export function useStepSafety() {
         const user = await authService.getMe();
         await setAuth(user, token);
       }
-      router.replace('/(app)');
+      router.replace('/(app)/(tabs)');
     } catch (err) {
       setError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
     } finally {

@@ -71,7 +71,7 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
       <Text style={styles.subtitle}>Esto puede tardar hasta 24 horas. Te avisamos en cuanto esté listo.</Text>
       <TouchableOpacity
         style={styles.buttonSecondary}
-        onPress={() => router.push('/(app)/profile')}
+        onPress={() => router.push('/(app)/(tabs)/profile')}
         activeOpacity={0.8}
       >
         <Text style={styles.buttonSecondaryLabel}>Entendido</Text>

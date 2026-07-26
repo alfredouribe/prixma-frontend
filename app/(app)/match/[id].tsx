@@ -21,7 +21,7 @@ export default function MatchScreen() {
   }>();
 
   function handleSendMessage() {
-    router.push('/(app)/chats');
+    router.push('/(app)/(tabs)/chats');
   }
 
   function handleKeepExploring() {

@@ -34,7 +34,7 @@ describe('VerificationStatusScreen', () => {
 
     fireEvent.press(screen.getByText('Entendido'));
 
-    expect(router.push).toHaveBeenCalledWith('/(app)/profile');
+    expect(router.push).toHaveBeenCalledWith('/(app)/(tabs)/profile');
   });
 
   it('llama a onGoToExplore al tocar "Ir a explorar" cuando la solicitud fue aprobada', () => {

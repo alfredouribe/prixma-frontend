@@ -10,7 +10,7 @@ export default function OnboardingLayout() {
   }
 
   if (user?.onboarding_completed) {
-    return <Redirect href="/(app)" />;
+    return <Redirect href="/(app)/(tabs)" />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

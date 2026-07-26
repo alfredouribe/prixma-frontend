@@ -81,7 +81,7 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
       setBlockModalVisible(false);
       // No router.back(): el usuario no debe poder volver con el botón
       // atrás del sistema a una conversación que acaba de bloquear.
-      router.replace('/(app)/chats');
+      router.replace('/(app)/(tabs)/chats');
     } else {
       Alert.alert('', blockError ?? 'Algo salió mal. Revisa tu conexión e intenta de nuevo.');
     }
@@ -185,7 +185,9 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
           <ReportModal
             visible={reportModalVisible}
             targetId={other.id}
+            targetName={other.display_name}
             onClose={() => setReportModalVisible(false)}
+            onReported={() => router.replace('/(app)/(tabs)/chats')}
           />
         </>
       )}
