@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { matchingService } from '../services/matchingService';
 import type { ExploreProfile, Match, SwipeDirection, SwipeResult } from '../types/matching.types';
 
@@ -36,10 +36,19 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
   // caso esperado de negocio, no un error de red/servidor — dispara el
   // paywall de Premium en vez de simplemente permitir reintentar.
   const [showLikeLimitPaywall, setShowLikeLimitPaywall] = useState(false);
+  // Guard real contra doble swipe: `isSwiping` (state) es asíncrono — dos
+  // llamadas a `swipe()` disparadas en el mismo tick (doble tap) leen el
+  // mismo valor de `isSwiping` (false) antes de que React vuelva a
+  // renderizar, así que ambas pasan el chequeo y disparan 2 requests reales
+  // al backend. Una ref se actualiza de forma síncrona e inmediata, sin
+  // esperar un re-render — cierra la race condition. `isSwiping` (state) se
+  // conserva solo para exponer el valor a la UI (deshabilitar botones, etc.).
+  const isSwipingRef = useRef(false);
 
   const swipe = useCallback(
     async (profile: ExploreProfile, direction: SwipeDirection) => {
-      if (isSwiping) return;
+      if (isSwipingRef.current) return;
+      isSwipingRef.current = true;
       setIsSwiping(true);
 
       try {
@@ -58,10 +67,11 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
           setShowLikeLimitPaywall(true);
         }
       } finally {
+        isSwipingRef.current = false;
         setIsSwiping(false);
       }
     },
-    [isSwiping, onSwipeComplete],
+    [onSwipeComplete],
   );
 
   const dismissMatch = useCallback(() => {

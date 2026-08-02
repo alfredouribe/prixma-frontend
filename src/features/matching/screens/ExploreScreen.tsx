@@ -114,34 +114,44 @@ export function ExploreScreen() {
             hasVideo={!isAd && (currentProfile?.has_video ?? false)}
             disabled={isSwiping}
           />
-
-          {/* Match Overlay */}
-          {matchResult && (
-            <MatchOverlay
-              visible={true}
-              myPhoto={myProfile?.photo_url ?? null}
-              otherProfile={matchResult.otherProfile}
-              onSendMessage={() => {
-                dismissMatch();
-                router.push('/(app)/(tabs)/chats');
-              }}
-              onKeepExploring={dismissMatch}
-              onViewFull={() => {
-                const otherProfile = matchResult.otherProfile;
-                dismissMatch();
-                router.push({
-                  pathname: '/(app)/match/[id]',
-                  params: {
-                    id: matchResult.matchId,
-                    name: otherProfile.display_name,
-                    photo: otherProfile.photos[0]?.url ?? '',
-                    myPhoto: myProfile?.photo_url ?? '',
-                  },
-                });
-              }}
-            />
-          )}
         </>
+      )}
+
+      {/* Match Overlay — fuera del ternario de arriba a propósito: el swipe
+          que completa un match puede ser también el que agota la cola local
+          (`advance()` marca `isEmpty` en el mismo tick en que llega
+          `matchResult`), y antes este overlay vivía anidado dentro de la
+          rama "cola no vacía" — la pantalla saltaba directo a "no hay más
+          perfiles" y el match nunca se veía, aunque sí quedara registrado en
+          el backend (conversación creada, visible en Chats). Bug real
+          reportado por el humano 2026-08-03. `matchResult` es independiente
+          de qué esté pintado en el área de la card, así que debe poder
+          mostrarse encima de cualquiera de los 3 estados (cargando, vacío,
+          con card). */}
+      {matchResult && (
+        <MatchOverlay
+          visible={true}
+          myPhoto={myProfile?.photo_url ?? null}
+          otherProfile={matchResult.otherProfile}
+          onSendMessage={() => {
+            dismissMatch();
+            router.push('/(app)/(tabs)/chats');
+          }}
+          onKeepExploring={dismissMatch}
+          onViewFull={() => {
+            const otherProfile = matchResult.otherProfile;
+            dismissMatch();
+            router.push({
+              pathname: '/(app)/match/[id]',
+              params: {
+                id: matchResult.matchId,
+                name: otherProfile.display_name,
+                photo: otherProfile.photos[0]?.url ?? '',
+                myPhoto: myProfile?.photo_url ?? '',
+              },
+            });
+          }}
+        />
       )}
 
       {/* Filter Sheet — shared across empty and normal states */}
