@@ -83,6 +83,23 @@ describe('useSwipe', () => {
     expect(result.current.matchResult).toBeNull();
   });
 
+  it('cuando el swipe falla, no llama a onSwipeComplete y sube failedSwipeToken (fuerza remount de la card en vez de quedar invisible)', async () => {
+    (matchingService.swipe as jest.Mock).mockRejectedValue(new Error('500'));
+
+    const onSwipeComplete = jest.fn();
+    const { result } = renderHook(() => useSwipe({ onSwipeComplete }));
+
+    expect(result.current.failedSwipeToken).toBe(0);
+
+    await act(async () => {
+      await result.current.swipe(mockProfile, 'like');
+    });
+
+    expect(onSwipeComplete).not.toHaveBeenCalled();
+    expect(result.current.failedSwipeToken).toBe(1);
+    expect(result.current.isSwiping).toBe(false);
+  });
+
   it('no ejecuta swipe duplicado mientras está procesando', async () => {
     let resolveSwipe!: (val: unknown) => void;
     (matchingService.swipe as jest.Mock).mockReturnValue(

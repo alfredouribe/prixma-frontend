@@ -7,6 +7,7 @@ import { useChatRequests } from '../hooks/useChatRequests';
 import { ConversationList } from '../components/ConversationList';
 import { RequestCard } from '../components/RequestCard';
 import { conversationRoute } from '../utils/conversationRoute';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { Conversation } from '../types/chat.types';
 
@@ -43,7 +44,10 @@ export function ConversationsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.title}>Mensajes</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Mensajes</Text>
+        <NotificationBell />
+      </View>
 
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -105,12 +109,17 @@ export function ConversationsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: surfaces.bg },
-  title: {
-    ...typography.h1,
-    color: text.primary,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginHorizontal: spacing.xl,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
+  },
+  title: {
+    ...typography.h1,
+    color: text.primary,
   },
   tabs: {
     flexDirection: 'row',

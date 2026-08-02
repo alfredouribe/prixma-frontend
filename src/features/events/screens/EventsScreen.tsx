@@ -5,6 +5,7 @@ import { useEvents } from '../hooks/useEvents';
 import { EventCard } from '../components/EventCard';
 import { EventCategoryFilter } from '../components/EventCategoryFilter';
 import { eventDetailRoute } from '../utils/eventRoute';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { colors, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { Event } from '../types/event.types';
 
@@ -36,7 +37,10 @@ export function EventsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.title}>Eventos</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Eventos</Text>
+        <NotificationBell />
+      </View>
 
       <EventCategoryFilter value={filter} onChange={changeFilter} />
 
@@ -89,12 +93,17 @@ export function EventsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: surfaces.bg },
-  title: {
-    ...typography.h1,
-    color: text.primary,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginHorizontal: spacing.xl,
     marginTop: spacing.md,
     marginBottom: spacing.lg,
+  },
+  title: {
+    ...typography.h1,
+    color: text.primary,
   },
   errorBanner: {
     marginHorizontal: spacing.xl,

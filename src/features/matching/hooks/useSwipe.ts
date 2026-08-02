@@ -12,6 +12,15 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
     otherProfile: ExploreProfile;
   } | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
+  // Se incrementa en cada swipe fallido — combinado en el `key` de
+  // ProfileCard (ExploreScreen.tsx) para forzar un remount. La animación
+  // de salida (Reanimated) ya movió la card fuera de pantalla antes de que
+  // el request confirmara el swipe; si el request falla, `advance()` nunca
+  // se llama (a propósito, un swipe fallido no debe contar como visto), así
+  // que sin remount la misma card se queda con las mismas shared values
+  // "voladas" — invisible para siempre, sin nada detrás. Ver comentario en
+  // useExploreQueue.ts sobre el bug real que dejaba esto en negro.
+  const [failedSwipeToken, setFailedSwipeToken] = useState(0);
 
   const swipe = useCallback(
     async (profile: ExploreProfile, direction: SwipeDirection) => {
@@ -26,7 +35,10 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
           setMatchResult({ matchId: result.match_id, otherProfile: profile });
         }
       } catch {
-        // Swipe failed silently — card goes back via animation
+        // No avanza (un swipe fallido no cuenta como visto) — solo fuerza
+        // el remount de la card para que vuelva a verse en su posición
+        // original y el usuario pueda reintentar.
+        setFailedSwipeToken((t) => t + 1);
       } finally {
         setIsSwiping(false);
       }
@@ -38,5 +50,5 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
     setMatchResult(null);
   }, []);
 
-  return { swipe, matchResult, isSwiping, dismissMatch };
+  return { swipe, matchResult, isSwiping, dismissMatch, failedSwipeToken };
 }

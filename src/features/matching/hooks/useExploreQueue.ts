@@ -51,9 +51,21 @@ export function useExploreQueue() {
 
     try {
       const profiles = await matchingService.getExploreQueue(BATCH_SIZE);
-      if (profiles.length > 0) {
-        setQueue((prev) => [...prev, ...profiles]);
-      }
+      // El backend excluye perfiles ya swipeados (tabla `swipes`), pero el
+      // prefetch dispara con perfiles del batch actual todavía sin swipear
+      // (PREFETCH_THRESHOLD) — esos siguen siendo "no swipeados" para el
+      // backend, así que reaparecen tal cual en este segundo batch. Sin
+      // este filtro, quedaban duplicados en la cola: al llegar el usuario a
+      // esa copia duplicada, el swipe repetido chocaba con el UNIQUE
+      // (swiper_id, swiped_id) del backend (500), `advance()` nunca se
+      // llamaba (ver useSwipe.ts) y la card se quedaba fuera de pantalla
+      // sin nada detrás — pantalla en negro reportada por el humano
+      // 2026-08-03.
+      setQueue((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newProfiles = profiles.filter((p) => !existingIds.has(p.id));
+        return newProfiles.length > 0 ? [...prev, ...newProfiles] : prev;
+      });
     } catch {
       // silently fail
     } finally {

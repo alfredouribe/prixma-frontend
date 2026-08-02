@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import Slider from '@react-native-community/slider';
 import MapView, { Circle, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
+import { getCurrentPositionWithTimeout } from '../../../lib/getCurrentPosition';
 import type { CreateGeoBlockPayload } from '../types/safety.types';
 
 const DEFAULT_RADIUS_KM = 5;
@@ -46,7 +47,7 @@ export function GeoBlockMap({ visible, isSaving = false, onSave, onClose }: GeoB
           if (!cancelled) setLocationError(true);
           return;
         }
-        const position = await Location.getCurrentPositionAsync({});
+        const position = await getCurrentPositionWithTimeout();
         if (!cancelled) {
           setCoords({ latitude: position.coords.latitude, longitude: position.coords.longitude });
         }

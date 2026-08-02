@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/stores/authStore';
 import { authService } from '../src/features/auth/services/authService';
 import { usePushNotificationRouter } from '../src/features/notifications/hooks/usePushNotificationRouter';
@@ -51,12 +52,22 @@ export default function RootLayout() {
   if (!fontsLoaded || !authReady) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
-    </GestureHandlerRootView>
+    // SafeAreaProvider agregado 2026-08-02 — antes no existía en ningún
+    // punto del árbol, así que `useSafeAreaInsets()` (el hook) lanzaba en
+    // tiempo real ("No safe area value available...", no solo en tests);
+    // solo el componente `<SafeAreaView>` funcionaba (tiene su propio
+    // fallback nativo sin Provider, por eso el resto de la app ya lo usaba
+    // sin problema). Necesario para que la barra de tabs calcule su alto
+    // real respetando la barra de gestos de Android — ver
+    // app/(app)/(tabs)/_layout.tsx.
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(app)" />
+        </Stack>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

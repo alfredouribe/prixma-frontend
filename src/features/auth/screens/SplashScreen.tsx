@@ -31,8 +31,8 @@ export function SplashScreen() {
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <View style={styles.top}>
           <Text style={styles.tagline}>
-            Conexiones reales,{"\n"}
-            <Text style={styles.taglineAccent}>Sin pedir permiso.</Text>
+            Conecta siendo tú,{"\n"}
+            <Text style={styles.taglineAccent}>Conecta sin límites.</Text>
           </Text>
 
           <Text style={styles.featureItem}>Identidades verificadas</Text>

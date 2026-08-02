@@ -1,6 +1,10 @@
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, surfaces, text } from '../../../src/lib/theme';
+
+const BASE_HEIGHT = 60;
+const BASE_PADDING_BOTTOM = 8;
 
 /**
  * Tab navigator con las 4 pestañas visibles de la app. Las pantallas de
@@ -12,6 +16,15 @@ import { colors, surfaces, text } from '../../../src/lib/theme';
  * Ver nota en app/(app)/_layout.tsx.
  */
 export default function TabsLayout() {
+  // Al fijar `tabBarStyle.height` explícito, React Navigation deja de
+  // sumarle automáticamente el inset inferior del dispositivo — en Android
+  // con barra de gestos, eso recortaba el label de los tabs (reportado por
+  // el humano 2026-08-02: "Eventos"/"Chats" se veían cortados). Se suma
+  // `insets.bottom` a mano; en dispositivos sin gesture nav (3 botones,
+  // iPhone con home button) `insets.bottom` es 0 y el resultado es idéntico
+  // al de antes.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -20,8 +33,8 @@ export default function TabsLayout() {
           backgroundColor: surfaces.elevated,
           borderTopColor: surfaces.border,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
+          height: BASE_HEIGHT + insets.bottom,
+          paddingBottom: BASE_PADDING_BOTTOM + insets.bottom,
           paddingTop: 8,
         },
         tabBarActiveTintColor: colors.purple,

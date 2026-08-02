@@ -5,8 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../stores/authStore';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
-import { UnreadBadge } from '../../notifications/components/UnreadBadge';
-import { useUnreadCount } from '../../notifications/hooks/useUnreadCount';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { CardActions } from '../components/CardActions';
 import { EmptyExplore } from '../components/EmptyExplore';
 import { FilterSheet } from '../components/FilterSheet';
@@ -24,9 +23,8 @@ export function ExploreScreen() {
 
   const { currentProfile, isEmpty, isLoading, advance, refresh } = useExploreQueue();
   const { preferences, updatePreferences } = useMatchingPreferences();
-  const { count: unreadCount } = useUnreadCount();
 
-  const { swipe, matchResult, isSwiping, dismissMatch } = useSwipe({
+  const { swipe, matchResult, isSwiping, dismissMatch, failedSwipeToken } = useSwipe({
     onSwipeComplete: advance,
   });
 
@@ -48,15 +46,7 @@ export function ExploreScreen() {
           >
             <Ionicons name="options-outline" size={24} color="#ffffff" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push('/(app)/notifications')}
-            accessibilityLabel="Notificaciones"
-            accessibilityRole="button"
-            style={styles.bellButton}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#ffffff" />
-            <UnreadBadge count={unreadCount} />
-          </TouchableOpacity>
+          <NotificationBell />
         </View>
       </View>
 
@@ -71,7 +61,7 @@ export function ExploreScreen() {
           {/* Card */}
           <View style={styles.cardContainer}>
             <ProfileCard
-              key={currentProfile.id}
+              key={`${currentProfile.id}-${failedSwipeToken}`}
               profile={currentProfile}
               onSwipe={(direction) => swipe(currentProfile, direction)}
             />
@@ -160,9 +150,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-  },
-  bellButton: {
-    position: 'relative',
   },
   cardContainer: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { CityPicker } from '../CityPicker';
 import { searchPlace, reverseGeocode } from '../../../../lib/nominatim';
 import * as Location from 'expo-location';
@@ -127,6 +127,30 @@ describe('CityPicker', () => {
     });
 
     expect(onChangeSpy).toHaveBeenCalledWith('Guadalajara, México', 20.6597, -103.3496);
+  });
+
+  it('no se queda pensando para siempre si la ubicación nunca resuelve (bug real, ver GeoBlockMap.test.tsx)', async () => {
+    jest.useFakeTimers();
+    mockRequestPermissions.mockResolvedValue({ status: 'granted' });
+    mockGetCurrentPosition.mockReturnValue(new Promise(() => {}));
+    const onChangeSpy = jest.fn();
+
+    render(<Harness onChangeSpy={onChangeSpy} />);
+
+    fireEvent.press(screen.getByTestId('city-picker-use-location'));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(10_000);
+    });
+
+    await waitFor(() => expect(screen.getByText('No se pudo obtener tu ubicación.')).toBeTruthy());
+    expect(onChangeSpy).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 
   it('muestra el error de ubicación si el permiso es denegado', async () => {

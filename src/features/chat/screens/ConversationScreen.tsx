@@ -18,6 +18,7 @@ import { useConversation } from '../hooks/useConversation';
 import { MessageBubble } from '../components/MessageBubble';
 import { MessageInput } from '../components/MessageInput';
 import { ConversationMenu } from '../components/ConversationMenu';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { useAuthStore } from '../../../stores/authStore';
 import { useBlocks } from '../../safety/hooks/useBlocks';
 import { BlockModal } from '../../safety/components/BlockModal';
@@ -88,7 +89,7 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator color={colors.purple} size="large" />
@@ -103,8 +104,15 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
       ) : (
         <>
           <View style={styles.topbar}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backBtnRow}
+              activeOpacity={0.7}
+              hitSlop={8}
+              accessibilityLabel="Volver a Chats"
+            >
               <Ionicons name="arrow-back" size={20} color={text.primary} />
+              <Text style={styles.backLabel}>Chats</Text>
             </TouchableOpacity>
 
             {other?.photo ? (
@@ -119,17 +127,21 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
               {other?.display_name ?? '—'}
             </Text>
 
-            {other && (
-              <TouchableOpacity
-                onPress={() => setMenuVisible(true)}
-                style={styles.iconBtn}
-                activeOpacity={0.7}
-                accessibilityLabel="Más opciones"
-                testID="conversation-menu-btn"
-              >
-                <Ionicons name="ellipsis-horizontal" size={20} color={text.primary} />
-              </TouchableOpacity>
-            )}
+            <View style={styles.trailing}>
+              <NotificationBell />
+
+              {other && (
+                <TouchableOpacity
+                  onPress={() => setMenuVisible(true)}
+                  style={styles.iconBtn}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Más opciones"
+                  testID="conversation-menu-btn"
+                >
+                  <Ionicons name="ellipsis-horizontal" size={20} color={text.primary} />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           <KeyboardAvoidingView
@@ -229,6 +241,27 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  trailing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  // Botón atrás con label — a diferencia del resto de la app (icono solo),
+  // aquí se deja explícito que vuelve a "Chats": el detalle de chat vive
+  // fuera de la barra de tabs a propósito (fix de bug de back-button
+  // documentado en plan.md), así que no hay ninguna otra pista visual de
+  // a dónde regresa el botón atrás. Pedido del humano 2026-08-02.
+  backBtnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingVertical: spacing.xs,
+    paddingRight: spacing.xs,
+  },
+  backLabel: {
+    ...typography.body,
+    color: text.primary,
   },
   avatar: {
     width: 36,

@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { reverseGeocode, searchPlace, type NominatimPlace } from '../../../lib/nominatim';
+import { getCurrentPositionWithTimeout } from '../../../lib/getCurrentPosition';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 
 /** Debounce mínimo exigido por la política de uso de Nominatim (máx. 1 req/seg). */
@@ -89,7 +90,7 @@ export function CityPicker({ value, latitude, longitude, onChange }: CityPickerP
         setLocationError(LOCATION_ERROR_COPY);
         return;
       }
-      const position = await Location.getCurrentPositionAsync({});
+      const position = await getCurrentPositionWithTimeout();
       const place = await reverseGeocode(position.coords.latitude, position.coords.longitude);
       if (!place) {
         setLocationError(LOCATION_ERROR_COPY);

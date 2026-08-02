@@ -72,6 +72,46 @@ describe('useExploreQueue', () => {
     );
   });
 
+  it('no duplica perfiles que ya están en la cola al hacer loadMore (bug: quedaba en negro al agotar perfiles)', async () => {
+    // El backend excluye perfiles ya swipeados, no los ya mostrados-pero-
+    // no-swipeados-todavía — el batch del prefetch puede traer de vuelta
+    // perfiles que ya están en la cola local sin haber sido swipeados aún.
+    const overlappingBatch = [
+      makeProfile('profile-20'),
+      makeProfile('profile-21'),
+      makeProfile('profile-22'),
+      makeProfile('profile-23'),
+      makeProfile('profile-24'),
+      makeProfile('new-1'),
+      makeProfile('new-2'),
+    ];
+
+    (matchingService.getExploreQueue as jest.Mock)
+      .mockResolvedValueOnce(batch25)
+      .mockResolvedValueOnce(overlappingBatch);
+
+    const { result } = renderHook(() => useExploreQueue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    for (let i = 0; i < 20; i++) {
+      act(() => result.current.advance());
+    }
+
+    await waitFor(() => expect(matchingService.getExploreQueue).toHaveBeenCalledTimes(2));
+
+    // Avanza hasta el final de la cola original (25) y confirma que los
+    // siguientes perfiles son los 2 realmente nuevos, no duplicados.
+    for (let i = 0; i < 5; i++) {
+      act(() => result.current.advance());
+    }
+
+    expect(result.current.currentProfile?.id).toBe('new-1');
+    act(() => result.current.advance());
+    expect(result.current.currentProfile?.id).toBe('new-2');
+    act(() => result.current.advance());
+    expect(result.current.isEmpty).toBe(true);
+  });
+
   it('advance mueve al siguiente perfil', async () => {
     (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(batch25);
 

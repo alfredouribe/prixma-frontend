@@ -29,11 +29,12 @@ const HIDDEN_OFFSET = -40;
  *
  * Posicionamiento del safe-area top: se usa el componente `SafeAreaView`
  * (no el hook `useSafeAreaInsets`) — mismo patrón ya establecido en
- * `ConversationScreen.tsx`/`VideoCard.tsx`. El hook exige un
- * `<SafeAreaProvider>` ancestro (que este proyecto no monta en
- * app/_layout.tsx) y lanza en tiempo de ejecución sin él; el componente
- * `SafeAreaView` no tiene esa dependencia — lee el frame nativo
- * directamente.
+ * `ConversationScreen.tsx`/`VideoCard.tsx`. Escrito cuando `app/_layout.tsx`
+ * todavía no montaba `<SafeAreaProvider>` (el hook exige ese ancestro y
+ * lanzaba en tiempo real sin él); ya se agregó (2026-08-02, ver
+ * `app/(app)/(tabs)/_layout.tsx` para el primer uso real del hook), pero se
+ * deja el componente aquí tal cual — no hay necesidad de migrar código que
+ * ya funciona.
  */
 export function MessageToast({ toast, onPress, onDismiss }: MessageToastProps) {
   const visible = toast !== null;
