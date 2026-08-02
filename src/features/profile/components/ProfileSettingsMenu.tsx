@@ -27,7 +27,7 @@ const MENU_ITEMS = [
   },
   {
     key: 'notifications',
-    label: 'Notificaciones',
+    label: 'Preferencias de notificaciones',
     description: 'Matches, mensajes, eventos',
     icon: 'notifications-outline' as IoniconName,
     iconColor: colors.rose,

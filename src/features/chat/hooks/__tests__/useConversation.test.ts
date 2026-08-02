@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useConversation } from '../useConversation';
 import { chatService } from '../../services/chatService';
 import { getEcho } from '../../../../lib/echo';
+import { useActiveConversationStore } from '../../../../stores/activeConversationStore';
 import type { Conversation, MessageSentPayload } from '../../types/chat.types';
 
 jest.mock('../../services/chatService');
@@ -45,6 +46,18 @@ describe('useConversation', () => {
       total: 0,
     });
     (chatService.markAsRead as jest.Mock).mockResolvedValue(undefined);
+    useActiveConversationStore.setState({ activeConversationId: null });
+  });
+
+  it('marca la conversación como activa al montar y la limpia al desmontar (usada por el toast global)', async () => {
+    const { result, unmount } = renderHook(() => useConversation('conv-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(useActiveConversationStore.getState().activeConversationId).toBe('conv-1');
+
+    unmount();
+
+    expect(useActiveConversationStore.getState().activeConversationId).toBeNull();
   });
 
   it('se suscribe al canal privado de la conversación al montar', async () => {
@@ -73,11 +86,44 @@ describe('useConversation', () => {
           read_at: null,
           created_at: '2026-07-19T10:05:00Z',
         },
+        conversation_id: 'conv-1',
+        sender_name: 'Sam',
+        sender_photo: null,
+        preview: 'Hola, ¿cómo estás?',
       });
     });
 
     expect(result.current.messages).toHaveLength(1);
     expect(result.current.messages[0].content).toBe('Hola, ¿cómo estás?');
+  });
+
+  it('vuelve a marcar como leída la conversación cuando llega un mensaje en vivo (bug: quedaba "no leída" en la bandeja)', async () => {
+    const { result } = renderHook(() => useConversation('conv-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(chatService.markAsRead).toHaveBeenCalledTimes(1);
+
+    const handler = listen.mock.calls.find(([event]) => event === 'MessageSent')?.[1] as (
+      payload: MessageSentPayload,
+    ) => void;
+
+    act(() => {
+      handler({
+        message: {
+          id: 'msg-1',
+          sender_id: 'user-2',
+          content: 'Hola de nuevo',
+          read_at: null,
+          created_at: '2026-07-19T10:05:00Z',
+        },
+        conversation_id: 'conv-1',
+        sender_name: 'Sam',
+        sender_photo: null,
+        preview: 'Hola de nuevo',
+      });
+    });
+
+    expect(chatService.markAsRead).toHaveBeenCalledTimes(2);
   });
 
   it('no duplica un mensaje que ya existe en el estado (mismo id)', async () => {
@@ -101,6 +147,10 @@ describe('useConversation', () => {
     act(() => {
       handler({
         message: { id: 'msg-1', sender_id: 'user-2', content: 'Hola', read_at: null, created_at: '2026-07-19T10:00:00Z' },
+        conversation_id: 'conv-1',
+        sender_name: 'Sam',
+        sender_photo: null,
+        preview: 'Hola',
       });
     });
 

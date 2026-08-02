@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthStore } from '../src/stores/authStore';
 import { authService } from '../src/features/auth/services/authService';
+import { usePushNotificationRouter } from '../src/features/notifications/hooks/usePushNotificationRouter';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,6 +41,12 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, authReady]);
+
+  // Deep link de push (tap en background / cold start) + supresión del
+  // banner nativo en foreground. `enabled` se queda en `false` hasta que
+  // la navegación raíz esté lista, para no navegar antes de que el
+  // <Stack> exista — ver usePushNotificationRouter.ts.
+  usePushNotificationRouter(fontsLoaded && authReady);
 
   if (!fontsLoaded || !authReady) return null;
 

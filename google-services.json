@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "154690611630",
+    "project_id": "prixma-a0a96",
+    "storage_bucket": "prixma-a0a96.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154690611630:android:09d191d40094d647a4003f",
+        "android_client_info": {
+          "package_name": "site.prixma.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEvsjv8fZxvU-c-dQSB5FtswvEGtcSenM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

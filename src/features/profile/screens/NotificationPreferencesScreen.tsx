@@ -33,7 +33,13 @@ const TOGGLES: Array<{
   },
 ];
 
-export function NotificationsScreen() {
+// Renombrada 2026-07-26 (de NotificationsScreen a NotificationPreferencesScreen)
+// para no competir en nombre/título con la bandeja real de notificaciones
+// (historial + badge, features/notifications) — ver
+// features/notifications/specs/plan.md → "Entry point y disambiguación de
+// título" y brand/copies.md → "Preferencias de notificaciones". Esta
+// pantalla solo guarda toggles, nunca envía notificaciones reales.
+export function NotificationPreferencesScreen() {
   const router = useRouter();
   const { settings, isLoading, error, toggle, reload } = useProfileSettings();
 
@@ -43,7 +49,7 @@ export function NotificationsScreen() {
         <Ionicons name="arrow-back" size={20} color={text.primary} />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Notificaciones</Text>
+      <Text style={styles.title}>Preferencias de notificaciones</Text>
 
       {isLoading && (
         <View style={styles.centered}>

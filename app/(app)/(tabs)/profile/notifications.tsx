@@ -1,5 +1,5 @@
-import { NotificationsScreen } from '../../../../src/features/profile/screens/NotificationsScreen';
+import { NotificationPreferencesScreen } from '../../../../src/features/profile/screens/NotificationPreferencesScreen';
 
 export default function NotificationsRoute() {
-  return <NotificationsScreen />;
+  return <NotificationPreferencesScreen />;
 }

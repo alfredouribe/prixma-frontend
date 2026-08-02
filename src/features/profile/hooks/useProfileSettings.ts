@@ -9,7 +9,7 @@ type ToggleKey = keyof Omit<ProfileSettings, 'id'>;
 /**
  * Hook genérico para leer y actualizar `user_settings` (toggle optimista con
  * revert en error). Es genérico sobre cualquier campo boolean de
- * `ProfileSettings` — lo usan tanto PrivacyScreen como NotificationsScreen,
+ * `ProfileSettings` — lo usan tanto PrivacyScreen como NotificationPreferencesScreen,
  * cada una con su propio subconjunto de keys a renderizar.
  */
 export function useProfileSettings() {

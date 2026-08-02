@@ -1,5 +1,8 @@
 import { Redirect, Stack } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
+import { usePresenceChannel } from '../../src/features/notifications/hooks/usePresenceChannel';
+import { useIncomingMessageToast } from '../../src/features/chat/hooks/useIncomingMessageToast';
+import { MessageToast } from '../../src/features/chat/components/MessageToast';
 
 /**
  * Punto de entrada de todo el grupo (app): guard de auth/onboarding, y
@@ -29,6 +32,21 @@ export default function AppLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
 
+  // Se une al canal de presencia `online` una sola vez por sesión
+  // autenticada (no por pantalla) — llamado incondicionalmente antes de
+  // cualquier `return` temprano (Rules of Hooks); el hook mismo no hace
+  // nada mientras `enabled` sea `false`. Ver
+  // features/notifications/specs/plan.md → "Canal de presencia (online)".
+  usePresenceChannel(isAuthenticated);
+
+  // Listener global del toast in-app de mensaje nuevo (canal
+  // `App.Models.User.{miId}`) — montado una sola vez por sesión
+  // autenticada, mismo criterio que usePresenceChannel de arriba: llamado
+  // incondicionalmente antes de cualquier `return` temprano (Rules of
+  // Hooks), el hook mismo no hace nada mientras `enabled` sea `false`. Ver
+  // features/chat/specs/plan.md → "Toast in-app de mensaje nuevo".
+  const { toast, dismiss, handlePress } = useIncomingMessageToast(isAuthenticated, user?.id);
+
   if (!isAuthenticated) {
     return <Redirect href="/(auth)" />;
   }
@@ -38,12 +56,16 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="match/[id]" />
-      <Stack.Screen name="chat/[id]" />
-      <Stack.Screen name="user/[uuid]" />
-      <Stack.Screen name="event/[id]" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="match/[id]" />
+        <Stack.Screen name="chat/[id]" />
+        <Stack.Screen name="user/[uuid]" />
+        <Stack.Screen name="event/[id]" />
+        <Stack.Screen name="notifications" />
+      </Stack>
+      <MessageToast toast={toast} onPress={handlePress} onDismiss={dismiss} />
+    </>
   );
 }

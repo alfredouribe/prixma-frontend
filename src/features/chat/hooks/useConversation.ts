@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getEcho } from '../../../lib/echo';
 import { chatService } from '../services/chatService';
 import { extractApiError } from '../../../lib/extractApiError';
+import { useActiveConversationStore } from '../../../stores/activeConversationStore';
 import type { Conversation, Message, MessageSentPayload } from '../types/chat.types';
 
 /**
@@ -52,7 +53,19 @@ export function useConversation(conversationId: string) {
     };
   }, [conversationId]);
 
-  // 2. Canal privado de Reverb — append en tiempo real, desconecta al desmontar.
+  // 2. Marca esta conversación como "abierta ahora mismo" mientras la
+  // pantalla está montada — la consulta `useIncomingMessageToast` (listener
+  // global de mensajes nuevos) para no mostrar el toast de un mensaje que
+  // ya se ve aparecer en este mismo hilo. Ver stores/activeConversationStore.ts.
+  useEffect(() => {
+    const store = useActiveConversationStore.getState();
+    store.setActiveConversation(conversationId);
+    return () => {
+      store.clearActiveConversation(conversationId);
+    };
+  }, [conversationId]);
+
+  // 3. Canal privado de Reverb — append en tiempo real, desconecta al desmontar.
   useEffect(() => {
     const channelName = `conversation.${conversationId}`;
     const echo = getEcho();
@@ -62,6 +75,13 @@ export function useConversation(conversationId: string) {
       setMessages((prev) => {
         if (prev.some((m) => m.id === payload.message.id)) return prev;
         return [...prev, payload.message];
+      });
+      // El marcado inicial (efecto 1) solo cubre el historial cargado al
+      // entrar — sin esto, un mensaje que llega mientras la conversación ya
+      // está abierta se pinta en el hilo pero queda "no leído" en el
+      // backend, y reaparece como no leído en la bandeja al volver a ella.
+      chatService.markAsRead(conversationId).catch(() => {
+        // No bloquea el hilo si falla el marcado de leídos.
       });
     });
 

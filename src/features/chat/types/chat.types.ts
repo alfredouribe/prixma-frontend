@@ -56,8 +56,15 @@ export interface SendRequestPayload {
   content: string;
 }
 
-// Payload del evento Reverb `MessageSent` (canal privado `conversation.{id}`)
-// — ver app/Events/MessageSent.php: `broadcastWith()` → `{ message: MessageResource }`.
+// Payload del evento Reverb `MessageSent` — se transmite tanto al canal
+// `conversation.{id}` (hilo abierto) como a `App.Models.User.{recipientId}`
+// (toast in-app global, ver features/chat/specs/plan.md → "Toast in-app de
+// mensaje nuevo"). Mismo payload en ambos canales — ver
+// app/Events/MessageSent.php → `broadcastWith()`.
 export interface MessageSentPayload {
   message: Message;
+  conversation_id: string;
+  sender_name: string;
+  sender_photo: string | null;
+  preview: string;
 }

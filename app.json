@@ -9,13 +9,15 @@
     "scheme": "prixma",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.prixma.mobile",
+      "bundleIdentifier": "site.prixma.mobile",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "app.prixma.mobile",
+      "package": "site.prixma.mobile",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/prixma_resources/png/appiconWhite.png",
         "backgroundColor": "#9b5dff"
@@ -41,7 +43,13 @@
         }
       ],
       "expo-splash-screen",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-notifications",
+        {
+          "color": "#9b5dff"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

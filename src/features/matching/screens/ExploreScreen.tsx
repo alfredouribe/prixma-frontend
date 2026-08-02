@@ -5,6 +5,8 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../stores/authStore';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
+import { UnreadBadge } from '../../notifications/components/UnreadBadge';
+import { useUnreadCount } from '../../notifications/hooks/useUnreadCount';
 import { CardActions } from '../components/CardActions';
 import { EmptyExplore } from '../components/EmptyExplore';
 import { FilterSheet } from '../components/FilterSheet';
@@ -22,6 +24,7 @@ export function ExploreScreen() {
 
   const { currentProfile, isEmpty, isLoading, advance, refresh } = useExploreQueue();
   const { preferences, updatePreferences } = useMatchingPreferences();
+  const { count: unreadCount } = useUnreadCount();
 
   const { swipe, matchResult, isSwiping, dismissMatch } = useSwipe({
     onSwipeComplete: advance,
@@ -29,6 +32,34 @@ export function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header — visible en los 3 estados (cargando, cola vacía, con
+          perfil). Antes solo vivía dentro de la rama "con perfil": si la
+          cola estaba vacía o todavía cargando, el usuario perdía acceso a
+          filtros (y ahora también a notificaciones) hasta que apareciera
+          un perfil. Ver features/notifications/specs/tasks.md → nota de
+          bug UX a evitar. */}
+      <View style={styles.header}>
+        <Text style={styles.logo}>prixma</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => setFiltersVisible(true)}
+            accessibilityLabel="Abrir filtros"
+            accessibilityRole="button"
+          >
+            <Ionicons name="options-outline" size={24} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/notifications')}
+            accessibilityLabel="Notificaciones"
+            accessibilityRole="button"
+            style={styles.bellButton}
+          >
+            <Ionicons name="notifications-outline" size={24} color="#ffffff" />
+            <UnreadBadge count={unreadCount} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#9b5dff" />
@@ -37,18 +68,6 @@ export function ExploreScreen() {
         <EmptyExplore onOpenFilters={() => setFiltersVisible(true)} />
       ) : (
         <>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.logo}>prixma</Text>
-            <TouchableOpacity
-              onPress={() => setFiltersVisible(true)}
-              accessibilityLabel="Abrir filtros"
-              accessibilityRole="button"
-            >
-              <Ionicons name="options-outline" size={24} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-
           {/* Card */}
           <View style={styles.cardContainer}>
             <ProfileCard
@@ -136,6 +155,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#9b5dff',
     letterSpacing: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  bellButton: {
+    position: 'relative',
   },
   cardContainer: {
     flex: 1,

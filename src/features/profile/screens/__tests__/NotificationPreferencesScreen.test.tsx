@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import { Switch } from 'react-native';
-import { NotificationsScreen } from '../NotificationsScreen';
+import { NotificationPreferencesScreen } from '../NotificationPreferencesScreen';
 import { useProfileSettings } from '../../hooks/useProfileSettings';
 import type { ProfileSettings } from '../../types/profile.types';
 
@@ -20,7 +20,7 @@ function buildSettings(overrides: Partial<ProfileSettings> = {}): ProfileSetting
   };
 }
 
-describe('NotificationsScreen', () => {
+describe('NotificationPreferencesScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -34,9 +34,9 @@ describe('NotificationsScreen', () => {
       reload: jest.fn(),
     });
 
-    render(<NotificationsScreen />);
+    render(<NotificationPreferencesScreen />);
 
-    expect(screen.getByText('Notificaciones')).toBeTruthy();
+    expect(screen.getByText('Preferencias de notificaciones')).toBeTruthy();
     expect(screen.getByText('Matches')).toBeTruthy();
     expect(screen.getByText('Mensajes')).toBeTruthy();
     expect(screen.getByText('Eventos')).toBeTruthy();
@@ -51,7 +51,7 @@ describe('NotificationsScreen', () => {
       reload: jest.fn(),
     });
 
-    render(<NotificationsScreen />);
+    render(<NotificationPreferencesScreen />);
 
     expect(screen.queryByText('Mensajes')).toBeNull();
   });
@@ -66,7 +66,7 @@ describe('NotificationsScreen', () => {
       reload,
     });
 
-    render(<NotificationsScreen />);
+    render(<NotificationPreferencesScreen />);
 
     expect(screen.getByText('Algo salió mal. Revisa tu conexión e intenta de nuevo.')).toBeTruthy();
     fireEvent.press(screen.getByText('Reintentar'));
@@ -83,7 +83,7 @@ describe('NotificationsScreen', () => {
       reload: jest.fn(),
     });
 
-    render(<NotificationsScreen />);
+    render(<NotificationPreferencesScreen />);
 
     // Orden de TOGGLES: matches(0), mensajes(1), eventos(2)
     const switches = screen.UNSAFE_getAllByType(Switch);
