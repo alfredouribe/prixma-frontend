@@ -100,6 +100,57 @@ describe('useSwipe', () => {
     expect(result.current.isSwiping).toBe(false);
   });
 
+  it('cuando el backend responde 429 (límite de likes del día), muestra el paywall en vez del comportamiento normal de swipe fallido', async () => {
+    const limitError = { response: { status: 429, data: { message: 'Límite alcanzado' } } };
+    (matchingService.swipe as jest.Mock).mockRejectedValue(limitError);
+
+    const onSwipeComplete = jest.fn();
+    const { result } = renderHook(() => useSwipe({ onSwipeComplete }));
+
+    expect(result.current.showLikeLimitPaywall).toBe(false);
+
+    await act(async () => {
+      await result.current.swipe(mockProfile, 'like');
+    });
+
+    expect(onSwipeComplete).not.toHaveBeenCalled();
+    expect(result.current.showLikeLimitPaywall).toBe(true);
+    // Igual que cualquier swipe fallido: la card ya voló fuera de pantalla,
+    // así que también debe remontarse.
+    expect(result.current.failedSwipeToken).toBe(1);
+  });
+
+  it('dismissLikeLimitPaywall oculta el paywall', async () => {
+    const limitError = { response: { status: 429 } };
+    (matchingService.swipe as jest.Mock).mockRejectedValue(limitError);
+
+    const { result } = renderHook(() => useSwipe({ onSwipeComplete: jest.fn() }));
+
+    await act(async () => {
+      await result.current.swipe(mockProfile, 'like');
+    });
+    expect(result.current.showLikeLimitPaywall).toBe(true);
+
+    act(() => {
+      result.current.dismissLikeLimitPaywall();
+    });
+
+    expect(result.current.showLikeLimitPaywall).toBe(false);
+  });
+
+  it('un error que no es 429 no muestra el paywall (comportamiento normal de swipe fallido)', async () => {
+    (matchingService.swipe as jest.Mock).mockRejectedValue({ response: { status: 500 } });
+
+    const { result } = renderHook(() => useSwipe({ onSwipeComplete: jest.fn() }));
+
+    await act(async () => {
+      await result.current.swipe(mockProfile, 'like');
+    });
+
+    expect(result.current.showLikeLimitPaywall).toBe(false);
+    expect(result.current.failedSwipeToken).toBe(1);
+  });
+
   it('no ejecuta swipe duplicado mientras está procesando', async () => {
     let resolveSwipe!: (val: unknown) => void;
     (matchingService.swipe as jest.Mock).mockReturnValue(

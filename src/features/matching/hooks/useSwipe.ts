@@ -6,6 +6,17 @@ interface UseSwipeProps {
   onSwipeComplete: () => void;
 }
 
+// El backend rechaza el like/super_like número `free_likes_per_day + 1` del
+// día con 429 (sin `error_code` en el body — el formato de error del
+// proyecto es siempre `{ message }`, así que el status code es la única
+// forma confiable de distinguir este caso de cualquier otro error, mismo
+// patrón que `useSendMessage.ts` distingue 404). Ver
+// features/premium/specs/spec.md → "Paywall al agotar likes del día".
+function isLikeLimitError(err: unknown): boolean {
+  const status = (err as { response?: { status?: number } })?.response?.status;
+  return status === 429;
+}
+
 export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
   const [matchResult, setMatchResult] = useState<{
     matchId: string;
@@ -21,6 +32,10 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
   // "voladas" — invisible para siempre, sin nada detrás. Ver comentario en
   // useExploreQueue.ts sobre el bug real que dejaba esto en negro.
   const [failedSwipeToken, setFailedSwipeToken] = useState(0);
+  // Distinto de un swipe fallido genérico: el límite diario de likes es un
+  // caso esperado de negocio, no un error de red/servidor — dispara el
+  // paywall de Premium en vez de simplemente permitir reintentar.
+  const [showLikeLimitPaywall, setShowLikeLimitPaywall] = useState(false);
 
   const swipe = useCallback(
     async (profile: ExploreProfile, direction: SwipeDirection) => {
@@ -34,11 +49,14 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
         if (result.matched && result.match_id) {
           setMatchResult({ matchId: result.match_id, otherProfile: profile });
         }
-      } catch {
+      } catch (err) {
         // No avanza (un swipe fallido no cuenta como visto) — solo fuerza
         // el remount de la card para que vuelva a verse en su posición
         // original y el usuario pueda reintentar.
         setFailedSwipeToken((t) => t + 1);
+        if (isLikeLimitError(err)) {
+          setShowLikeLimitPaywall(true);
+        }
       } finally {
         setIsSwiping(false);
       }
@@ -50,5 +68,17 @@ export function useSwipe({ onSwipeComplete }: UseSwipeProps) {
     setMatchResult(null);
   }, []);
 
-  return { swipe, matchResult, isSwiping, dismissMatch, failedSwipeToken };
+  const dismissLikeLimitPaywall = useCallback(() => {
+    setShowLikeLimitPaywall(false);
+  }, []);
+
+  return {
+    swipe,
+    matchResult,
+    isSwiping,
+    dismissMatch,
+    failedSwipeToken,
+    showLikeLimitPaywall,
+    dismissLikeLimitPaywall,
+  };
 }

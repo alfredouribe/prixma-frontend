@@ -23,6 +23,9 @@ import { useAuthStore } from '../../../stores/authStore';
 import { useBlocks } from '../../safety/hooks/useBlocks';
 import { BlockModal } from '../../safety/components/BlockModal';
 import { ReportModal } from '../../safety/components/ReportModal';
+import { ChatAdOverlay } from '../../premium/components/ChatAdOverlay';
+import { useChatAdTimer } from '../../premium/hooks/useChatAdTimer';
+import { usePremiumSettings } from '../../premium/hooks/usePremiumSettings';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { Message } from '../types/chat.types';
 
@@ -45,6 +48,15 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
     loadOlderMessages,
   } = useConversation(conversationId);
   const { blockUser, error: blockError } = useBlocks();
+  const { settings } = usePremiumSettings();
+  // Timer del ad de chat: solo corre si no es premium y hay un video
+  // configurado (nunca bloquea el chat con una pantalla vacía, ver
+  // features/premium/specs/spec.md → "Video de publicidad en chat").
+  const shouldShowChatAd = !!settings && !settings.is_premium && !!settings.chat_ad_video_url;
+  const { showAd: showChatAd, dismiss: dismissChatAd } = useChatAdTimer({
+    enabled: shouldShowChatAd,
+    minutes: settings?.free_chat_minutes_before_ad ?? 1,
+  });
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [blockModalVisible, setBlockModalVisible] = useState(false);
@@ -202,6 +214,14 @@ export function ConversationScreen({ conversationId }: ConversationScreenProps) 
             onReported={() => router.replace('/(app)/(tabs)/chats')}
           />
         </>
+      )}
+
+      {settings?.chat_ad_video_url && (
+        <ChatAdOverlay
+          visible={showChatAd}
+          videoUrl={settings.chat_ad_video_url}
+          onFinish={dismissChatAd}
+        />
       )}
     </SafeAreaView>
   );

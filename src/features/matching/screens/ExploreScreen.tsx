@@ -6,6 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../stores/authStore';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
 import { NotificationBell } from '../../notifications/components/NotificationBell';
+import { AdCard } from '../../premium/components/AdCard';
+import { LikeLimitPaywall } from '../../premium/components/LikeLimitPaywall';
+import { usePremiumSettings } from '../../premium/hooks/usePremiumSettings';
 import { CardActions } from '../components/CardActions';
 import { EmptyExplore } from '../components/EmptyExplore';
 import { FilterSheet } from '../components/FilterSheet';
@@ -14,19 +17,50 @@ import { ProfileCard } from '../components/ProfileCard';
 import { useExploreQueue } from '../hooks/useExploreQueue';
 import { useMatchingPreferences } from '../hooks/useMatchingPreferences';
 import { useSwipe } from '../hooks/useSwipe';
+import type { SwipeDirection } from '../types/matching.types';
 
 export function ExploreScreen() {
   const router = useRouter();
   const [filtersVisible, setFiltersVisible] = useState(false);
   const intention = useAuthStore((s) => s.user?.intention ?? null);
   const { profile: myProfile } = useMyProfile();
+  const { settings, isLoading: isSettingsLoading } = usePremiumSettings();
 
-  const { currentProfile, isEmpty, isLoading, advance, refresh } = useExploreQueue();
+  // Esperar a que carguen los ajustes de Premium antes de mostrar la
+  // primera card: así `adInterval` ya está resuelto (número real o `null`)
+  // desde el primer render con perfiles, evitando que las ads "salten" de
+  // posición si `settings` llegara después de que el usuario ya avanzó.
+  const { currentItem, currentIndex, isEmpty, isLoading, advance, refresh } = useExploreQueue({
+    isPremium: settings?.is_premium ?? false,
+    adInterval: settings?.free_swipes_per_ad ?? null,
+  });
   const { preferences, updatePreferences } = useMatchingPreferences();
 
-  const { swipe, matchResult, isSwiping, dismissMatch, failedSwipeToken } = useSwipe({
+  const {
+    swipe,
+    matchResult,
+    isSwiping,
+    dismissMatch,
+    failedSwipeToken,
+    showLikeLimitPaywall,
+    dismissLikeLimitPaywall,
+  } = useSwipe({
     onSwipeComplete: advance,
   });
+
+  const showLoading = isLoading || isSettingsLoading;
+  const isAd = currentItem?.kind === 'ad';
+  const currentProfile = currentItem?.kind === 'profile' ? currentItem.profile : null;
+
+  function handleAction(direction: SwipeDirection) {
+    if (isAd) {
+      advance();
+      return;
+    }
+    if (currentProfile) {
+      swipe(currentProfile, direction);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,30 +84,34 @@ export function ExploreScreen() {
         </View>
       </View>
 
-      {isLoading ? (
+      {showLoading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#9b5dff" />
         </View>
-      ) : isEmpty || !currentProfile ? (
+      ) : isEmpty || !currentItem ? (
         <EmptyExplore onOpenFilters={() => setFiltersVisible(true)} />
       ) : (
         <>
           {/* Card */}
           <View style={styles.cardContainer}>
-            <ProfileCard
-              key={`${currentProfile.id}-${failedSwipeToken}`}
-              profile={currentProfile}
-              onSwipe={(direction) => swipe(currentProfile, direction)}
-            />
+            {isAd ? (
+              <AdCard key={`ad-${currentIndex}`} onDismiss={advance} />
+            ) : currentProfile ? (
+              <ProfileCard
+                key={`${currentProfile.id}-${failedSwipeToken}`}
+                profile={currentProfile}
+                onSwipe={(direction) => swipe(currentProfile, direction)}
+              />
+            ) : null}
           </View>
 
           {/* Actions */}
           <CardActions
             intention={intention}
-            onSkip={() => swipe(currentProfile, 'dislike')}
-            onLike={() => swipe(currentProfile, 'like')}
-            onSuperLike={() => swipe(currentProfile, 'super_like')}
-            hasVideo={currentProfile.has_video}
+            onSkip={() => handleAction('dislike')}
+            onLike={() => handleAction('like')}
+            onSuperLike={() => handleAction('super_like')}
+            hasVideo={!isAd && (currentProfile?.has_video ?? false)}
             disabled={isSwiping}
           />
 
@@ -118,6 +156,8 @@ export function ExploreScreen() {
           onClose={() => setFiltersVisible(false)}
         />
       )}
+
+      <LikeLimitPaywall visible={showLikeLimitPaywall} onClose={dismissLikeLimitPaywall} />
     </SafeAreaView>
   );
 }

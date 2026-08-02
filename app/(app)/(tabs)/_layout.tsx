@@ -1,7 +1,10 @@
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, surfaces, text } from '../../../src/lib/theme';
+import { useChatUnreadCount } from '../../../src/features/chat/hooks/useChatUnreadCount';
+import { UnreadBadge } from '../../../src/features/notifications/components/UnreadBadge';
 
 const BASE_HEIGHT = 60;
 const BASE_PADDING_BOTTOM = 8;
@@ -24,6 +27,7 @@ export default function TabsLayout() {
   // iPhone con home button) `insets.bottom` es 0 y el resultado es idéntico
   // al de antes.
   const insets = useSafeAreaInsets();
+  const { count: unreadMessages } = useChatUnreadCount();
 
   return (
     <Tabs
@@ -74,7 +78,10 @@ export default function TabsLayout() {
         options={{
           title: 'Chats',
           tabBarIcon: ({ color, size }) => (
-            <Feather name="message-circle" size={size} color={color} />
+            <View style={{ position: 'relative' }}>
+              <Feather name="message-circle" size={size} color={color} />
+              <UnreadBadge count={unreadMessages} />
+            </View>
           ),
         }}
       />

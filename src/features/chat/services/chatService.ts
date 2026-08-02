@@ -67,6 +67,11 @@ export const chatService = {
     await api.post(`/chat/conversations/${conversationId}/read`);
   },
 
+  async getUnreadCount(): Promise<number> {
+    const { data } = await api.get<{ count: number }>('/chat/unread-count');
+    return data.count;
+  },
+
   async sendRequest(payload: SendRequestPayload): Promise<Conversation> {
     const { data } = await api.post<{ data: Conversation }>('/chat/requests', payload);
     return data.data;

@@ -1,20 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
+import { useSwipeGesture } from '../hooks/useSwipeGesture';
 import type { ExploreProfile, Intention, SwipeDirection } from '../types/matching.types';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.35;
-const SWIPE_UP_THRESHOLD = 100;
 
 const INTENTION_LABELS: Record<Intention, string> = {
   partner: 'Busca pareja',
@@ -40,8 +31,7 @@ interface ProfileCardProps {
 
 export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
   const [photoIndex, setPhotoIndex] = useState(0);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
+  const { pan, cardStyle } = useSwipeGesture(onSwipe);
 
   const photos = profile.photos;
 
@@ -51,60 +41,6 @@ export function ProfileCard({ profile, onSwipe }: ProfileCardProps) {
       return Math.max(i - 1, 0);
     });
   }
-
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .onUpdate((e) => {
-          'worklet';
-          translateX.value = e.translationX;
-          translateY.value = e.translationY;
-        })
-        .onEnd((e) => {
-          'worklet';
-          const movedRight = e.translationX > SWIPE_THRESHOLD;
-          const movedLeft = e.translationX < -SWIPE_THRESHOLD;
-          const movedUp =
-            e.translationY < -SWIPE_UP_THRESHOLD &&
-            Math.abs(e.translationX) < SWIPE_THRESHOLD;
-
-          if (movedRight) {
-            translateX.value = withSpring(SCREEN_WIDTH * 1.5, {}, (finished) => {
-              'worklet';
-              if (finished) runOnJS(onSwipe)('like');
-            });
-          } else if (movedLeft) {
-            translateX.value = withSpring(-SCREEN_WIDTH * 1.5, {}, (finished) => {
-              'worklet';
-              if (finished) runOnJS(onSwipe)('dislike');
-            });
-          } else if (movedUp) {
-            translateY.value = withSpring(-SCREEN_WIDTH * 1.5, {}, (finished) => {
-              'worklet';
-              if (finished) runOnJS(onSwipe)('super_like');
-            });
-          } else {
-            translateX.value = withSpring(0);
-            translateY.value = withSpring(0);
-          }
-        }),
-    [onSwipe, translateX, translateY],
-  );
-
-  const cardStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      translateX.value,
-      [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-      [-15, 0, 15],
-    );
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
-      ],
-    };
-  });
 
   const currentPhoto = photos[photoIndex]?.url ?? null;
   const visibleInterests = profile.interests.slice(0, 3);

@@ -1,11 +1,12 @@
 import { Alert } from 'react-native';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { ConversationScreen } from '../ConversationScreen';
 import { useConversation } from '../../hooks/useConversation';
 import { useBlocks } from '../../../safety/hooks/useBlocks';
 import { useReport } from '../../../safety/hooks/useReport';
 import { useReportEvidence } from '../../../safety/hooks/useReportEvidence';
+import { usePremiumSettings } from '../../../premium/hooks/usePremiumSettings';
 import type { Conversation } from '../../types/chat.types';
 
 // Factory explícito (no automock): automock forzaría a Jest a cargar el
@@ -19,6 +20,10 @@ jest.mock('../../hooks/useConversation', () => ({
 jest.mock('../../../safety/hooks/useBlocks');
 jest.mock('../../../safety/hooks/useReport');
 jest.mock('../../../safety/hooks/useReportEvidence');
+// Sin mockear, dispararía una llamada real a `premiumService.getSettings()`
+// (axios sin baseURL en test) — mismo criterio que el resto de los mocks de
+// este archivo, evita red real y actualizaciones de estado fuera de `act()`.
+jest.mock('../../../premium/hooks/usePremiumSettings');
 
 function buildConversation(overrides: Partial<Conversation> = {}): Conversation {
   return {
@@ -71,6 +76,13 @@ describe('ConversationScreen', () => {
       chatMessages: [],
       chatTotal: null,
       isLoading: false,
+    });
+    // `settings: null` → `ChatAdOverlay` nunca se renderiza (gate explícito
+    // en ConversationScreen.tsx sobre `settings?.chat_ad_video_url`).
+    (usePremiumSettings as jest.Mock).mockReturnValue({
+      settings: null,
+      isLoading: false,
+      error: null,
     });
   });
 
@@ -170,5 +182,83 @@ describe('ConversationScreen', () => {
     fireEvent.press(screen.getByTestId('report-done-btn'));
 
     expect(router.replace).toHaveBeenCalledWith('/(app)/(tabs)/chats');
+  });
+
+  describe('ad de chat (Premium)', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('muestra el ChatAdOverlay tras `free_chat_minutes_before_ad` minutos si no es premium y hay video configurado', () => {
+      (usePremiumSettings as jest.Mock).mockReturnValue({
+        settings: {
+          is_premium: false,
+          free_swipes_per_ad: 5,
+          free_likes_per_day: 5,
+          free_chat_minutes_before_ad: 1,
+          chat_ad_video_url: 'https://s3.example.com/ad.mp4',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConversationScreen conversationId="conv-1" />);
+
+      expect(screen.queryByTestId('chat-ad-overlay')).toBeNull();
+
+      act(() => {
+        jest.advanceTimersByTime(60_000);
+      });
+
+      expect(screen.getByTestId('chat-ad-overlay')).toBeTruthy();
+    });
+
+    it('no muestra el overlay si el usuario es premium, aunque haya video configurado', () => {
+      (usePremiumSettings as jest.Mock).mockReturnValue({
+        settings: {
+          is_premium: true,
+          free_swipes_per_ad: 5,
+          free_likes_per_day: 5,
+          free_chat_minutes_before_ad: 1,
+          chat_ad_video_url: 'https://s3.example.com/ad.mp4',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConversationScreen conversationId="conv-1" />);
+
+      act(() => {
+        jest.advanceTimersByTime(5 * 60_000);
+      });
+
+      expect(screen.queryByTestId('chat-ad-overlay')).toBeNull();
+    });
+
+    it('no muestra el overlay si no hay chat_ad_video_url configurado', () => {
+      (usePremiumSettings as jest.Mock).mockReturnValue({
+        settings: {
+          is_premium: false,
+          free_swipes_per_ad: 5,
+          free_likes_per_day: 5,
+          free_chat_minutes_before_ad: 1,
+          chat_ad_video_url: null,
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      render(<ConversationScreen conversationId="conv-1" />);
+
+      act(() => {
+        jest.advanceTimersByTime(5 * 60_000);
+      });
+
+      expect(screen.queryByTestId('chat-ad-overlay')).toBeNull();
+    });
   });
 });

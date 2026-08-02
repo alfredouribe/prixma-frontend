@@ -1,7 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useExploreQueue } from '../useExploreQueue';
 import { matchingService } from '../../services/matchingService';
-import type { ExploreProfile } from '../../types/matching.types';
+import type { ExploreProfile, ExploreQueueItem } from '../../types/matching.types';
 
 jest.mock('../../services/matchingService');
 
@@ -23,6 +23,13 @@ function makeProfile(id: string): ExploreProfile {
   };
 }
 
+// Helper: extrae el id del perfil de un item de la cola, o `null` si es un
+// ad (o si no hay item) — evita repetir el narrowing de `ExploreQueueItem`
+// en cada aserción.
+function profileId(item: ExploreQueueItem | null): string | null {
+  return item?.kind === 'profile' ? item.profile.id : null;
+}
+
 const batch25 = Array.from({ length: 25 }, (_, i) => makeProfile(`profile-${i}`));
 
 describe('useExploreQueue', () => {
@@ -37,7 +44,7 @@ describe('useExploreQueue', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.currentProfile?.id).toBe('profile-0');
+    expect(profileId(result.current.currentItem)).toBe('profile-0');
     expect(matchingService.getExploreQueue).toHaveBeenCalledTimes(1);
   });
 
@@ -49,7 +56,7 @@ describe('useExploreQueue', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.isEmpty).toBe(true);
-    expect(result.current.currentProfile).toBeNull();
+    expect(result.current.currentItem).toBeNull();
   });
 
   it('carga el siguiente batch cuando quedan 5 perfiles restantes', async () => {
@@ -105,9 +112,9 @@ describe('useExploreQueue', () => {
       act(() => result.current.advance());
     }
 
-    expect(result.current.currentProfile?.id).toBe('new-1');
+    expect(profileId(result.current.currentItem)).toBe('new-1');
     act(() => result.current.advance());
-    expect(result.current.currentProfile?.id).toBe('new-2');
+    expect(profileId(result.current.currentItem)).toBe('new-2');
     act(() => result.current.advance());
     expect(result.current.isEmpty).toBe(true);
   });
@@ -120,6 +127,64 @@ describe('useExploreQueue', () => {
 
     act(() => result.current.advance());
 
-    expect(result.current.currentProfile?.id).toBe('profile-1');
+    expect(profileId(result.current.currentItem)).toBe('profile-1');
+  });
+
+  // --- Premium: card de ads intercalada (features/premium/specs/plan.md) ---
+
+  it('intercala una card de ad cada `adInterval` perfiles reales', async () => {
+    const profiles = Array.from({ length: 12 }, (_, i) => makeProfile(`p${i + 1}`));
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(profiles);
+
+    const { result } = renderHook(() => useExploreQueue({ isPremium: false, adInterval: 5 }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Orden esperado: p1..p5, AD, p6..p10, AD, p11, p12
+    const expectedKinds = [
+      'profile', 'profile', 'profile', 'profile', 'profile', 'ad',
+      'profile', 'profile', 'profile', 'profile', 'profile', 'ad',
+      'profile', 'profile',
+    ];
+
+    for (const expectedKind of expectedKinds) {
+      expect(result.current.currentItem?.kind).toBe(expectedKind);
+      act(() => result.current.advance());
+    }
+  });
+
+  it('nunca coloca una ad antes del primer perfil real', async () => {
+    const profiles = Array.from({ length: 3 }, (_, i) => makeProfile(`p${i + 1}`));
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(profiles);
+
+    const { result } = renderHook(() => useExploreQueue({ isPremium: false, adInterval: 5 }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.currentItem?.kind).toBe('profile');
+  });
+
+  it('no intercala ads si el usuario es premium', async () => {
+    const profiles = Array.from({ length: 12 }, (_, i) => makeProfile(`p${i + 1}`));
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(profiles);
+
+    const { result } = renderHook(() => useExploreQueue({ isPremium: true, adInterval: 5 }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    for (let i = 0; i < 12; i++) {
+      expect(result.current.currentItem?.kind).toBe('profile');
+      act(() => result.current.advance());
+    }
+  });
+
+  it('no intercala ads si adInterval es null (ajustes de premium sin cargar)', async () => {
+    const profiles = Array.from({ length: 6 }, (_, i) => makeProfile(`p${i + 1}`));
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(profiles);
+
+    const { result } = renderHook(() => useExploreQueue({ isPremium: false, adInterval: null }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    for (let i = 0; i < 6; i++) {
+      expect(result.current.currentItem?.kind).toBe('profile');
+      act(() => result.current.advance());
+    }
   });
 });

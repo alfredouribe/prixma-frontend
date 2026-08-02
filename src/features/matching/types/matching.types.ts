@@ -24,6 +24,12 @@ export interface ProfilePhoto {
   position: number;
 }
 
+// Item de la cola de Explorar tras intercalar publicidad propia de Prixma+
+// (ver features/premium/specs/plan.md → "Card de ads en Explorar — mezcla
+// en el cliente, no en el backend"). Una card de ad nunca corresponde a un
+// perfil real ni dispara `POST /matching/swipe`.
+export type ExploreQueueItem = { kind: 'profile'; profile: ExploreProfile } | { kind: 'ad' };
+
 export interface SwipeResult {
   swiped: boolean;
   matched: boolean;
