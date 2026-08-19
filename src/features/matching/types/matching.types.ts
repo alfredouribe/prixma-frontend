@@ -36,6 +36,13 @@ export interface SwipeResult {
   match_id: string | null;
 }
 
+// Respuesta de POST /matching/rewind — ver
+// features/premium/specs/plan.md → "Deshacer swipe / rewind".
+export interface RewindResult {
+  swiped_id: string;
+  rewind_credits: number;
+}
+
 export interface MatchOtherUser {
   id: string;
   display_name: string;

@@ -146,6 +146,17 @@ export function useExploreQueue(options: UseExploreQueueOptions = {}) {
     setFetchTrigger((t) => t + 1);
   }, []);
 
+  // Deshace un swipe: `profiles` es append-only (nunca se quita un perfil
+  // de la cola, solo se avanza `currentIndex`), así que "deshacer" es
+  // literalmente volver el puntero a una posición ya vista — el perfil
+  // sigue ahí, no hace falta reinsertar nada. Ver
+  // features/premium/specs/plan.md → "Deshacer swipe / rewind". Si la cola
+  // ya se había marcado como agotada (`isEmpty`), rewind la revive.
+  const rewindTo = useCallback((index: number) => {
+    setCurrentIndex(index);
+    setIsEmpty(false);
+  }, []);
+
   const currentItem = items[currentIndex] ?? null;
 
   return {
@@ -156,5 +167,6 @@ export function useExploreQueue(options: UseExploreQueueOptions = {}) {
     isLoadingMore,
     advance,
     refresh,
+    rewindTo,
   };
 }

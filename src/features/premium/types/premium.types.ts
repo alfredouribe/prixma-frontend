@@ -4,4 +4,5 @@ export interface PremiumSettings {
   free_likes_per_day: number;
   free_chat_minutes_before_ad: number;
   chat_ad_video_url: string | null;
+  rewind_credits: number;
 }

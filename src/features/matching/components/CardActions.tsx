@@ -4,6 +4,14 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { colors, radius, spacing, surfaces } from '../../../lib/theme';
 import type { Intention } from '../types/matching.types';
 
+// COPY PENDIENTE: brand/copies.md no define copy para el botón de deshacer
+// swipe todavía — mismo criterio de placeholder ya usado en otras partes
+// del proyecto (ver AdCard.tsx / LikeLimitPaywall.tsx). Es un botón
+// solo-ícono, pero necesita texto real en español para su
+// accessibilityLabel igual que cualquier otro string visible/anunciado al
+// usuario — no se inventa mientras no esté aprobado.
+const REWIND_LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta accesible del botón "deshacer swipe"]';
+
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 interface IntentionConfig {
@@ -42,6 +50,13 @@ interface CardActionsProps {
   onSuperLike: () => void;
   hasVideo?: boolean;
   disabled?: boolean;
+  // Deshacer swipe (features/premium/specs/spec.md → "Deshacer swipe /
+  // rewind"). Oculto (no deshabilitado-y-gris) cuando no aplica — mismo
+  // criterio ya usado en este componente para `hasVideo`, en vez de mostrar
+  // un botón inerte.
+  canRewind?: boolean;
+  onRewind?: () => void;
+  isRewinding?: boolean;
 }
 
 export function CardActions({
@@ -51,6 +66,9 @@ export function CardActions({
   onSuperLike,
   hasVideo,
   disabled,
+  canRewind,
+  onRewind,
+  isRewinding,
 }: CardActionsProps) {
   const likeConfig = getIntentionConfig(intention);
 
@@ -101,6 +119,19 @@ export function CardActions({
           <Ionicons name="play" size={20} color={colors.purple} />
         </TouchableOpacity>
       )}
+
+      {canRewind && (
+        <TouchableOpacity
+          style={[styles.button, styles.rewind]}
+          onPress={onRewind}
+          disabled={disabled || isRewinding}
+          accessibilityLabel={REWIND_LABEL_PLACEHOLDER}
+          accessibilityRole="button"
+          testID="rewind-button"
+        >
+          <Ionicons name="arrow-undo" size={20} color={colors.orange} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -145,5 +176,10 @@ const styles = StyleSheet.create({
     backgroundColor: surfaces.card,
     borderWidth: 1.5,
     borderColor: colors.purple,
+  },
+  rewind: {
+    backgroundColor: surfaces.card,
+    borderWidth: 1.5,
+    borderColor: colors.orange,
   },
 });

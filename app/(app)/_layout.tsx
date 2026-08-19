@@ -64,6 +64,7 @@ export default function AppLayout() {
         <Stack.Screen name="user/[uuid]" />
         <Stack.Screen name="event/[id]" />
         <Stack.Screen name="notifications" />
+        <Stack.Screen name="likers" />
       </Stack>
       <MessageToast toast={toast} onPress={handlePress} onDismiss={dismiss} />
     </>

@@ -187,4 +187,43 @@ describe('useExploreQueue', () => {
       act(() => result.current.advance());
     }
   });
+
+  // --- Premium: deshacer swipe / rewind (features/premium/specs/plan.md) ---
+
+  it('rewindTo mueve currentIndex de vuelta a la posición guardada sin reinsertar nada', async () => {
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(batch25);
+
+    const { result } = renderHook(() => useExploreQueue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    act(() => result.current.advance());
+    act(() => result.current.advance());
+    act(() => result.current.advance());
+    expect(profileId(result.current.currentItem)).toBe('profile-3');
+
+    act(() => result.current.rewindTo(1));
+
+    expect(result.current.currentIndex).toBe(1);
+    expect(profileId(result.current.currentItem)).toBe('profile-1');
+    // `profiles` es append-only — el perfil sigue siendo la misma instancia
+    // de antes, no una reinsertada.
+    expect(matchingService.getExploreQueue).toHaveBeenCalledTimes(1);
+  });
+
+  it('rewindTo revive la cola cuando ya estaba marcada como agotada (isEmpty)', async () => {
+    const profiles = Array.from({ length: 2 }, (_, i) => makeProfile(`p${i + 1}`));
+    (matchingService.getExploreQueue as jest.Mock).mockResolvedValue(profiles);
+
+    const { result } = renderHook(() => useExploreQueue());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    act(() => result.current.advance());
+    act(() => result.current.advance());
+    expect(result.current.isEmpty).toBe(true);
+
+    act(() => result.current.rewindTo(1));
+
+    expect(result.current.isEmpty).toBe(false);
+    expect(profileId(result.current.currentItem)).toBe('p2');
+  });
 });

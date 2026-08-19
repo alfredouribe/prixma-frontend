@@ -4,6 +4,7 @@ import type {
   Match,
   MatchingPreferences,
   MatchingPreferencesUpdate,
+  RewindResult,
   SwipeDirection,
   SwipeResult,
 } from '../types/matching.types';
@@ -21,6 +22,25 @@ export const matchingService = {
       swiped_id: swipedId,
       direction,
     });
+    return res.data.data;
+  },
+
+  // Lista de quién dio like/super_like al usuario, sin necesidad de match
+  // previo — mismo shape de perfil que /explore (ExploreProfileResource),
+  // sin tipo nuevo. El backend responde 403 si el usuario no tiene acceso
+  // (ver features/premium/specs/spec.md → "Ver quién te dio like"), que el
+  // frontend distingue por status code en useLikers.ts.
+  async getLikers(): Promise<ExploreProfile[]> {
+    const res = await api.get<{ data: ExploreProfile[] }>('/matching/likers');
+    return res.data.data;
+  },
+
+  // Deshace el último swipe del usuario (cualquier dirección) — el backend
+  // rechaza con 400 (`{ message }` genérico) si no quedan créditos, no hay
+  // nada que deshacer, o el último swipe ya generó un match. Ver
+  // features/premium/specs/plan.md → "Deshacer swipe / rewind".
+  async rewind(): Promise<RewindResult> {
+    const res = await api.post<{ data: RewindResult }>('/matching/rewind');
     return res.data.data;
   },
 

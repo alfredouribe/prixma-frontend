@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../stores/authStore';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
@@ -9,6 +9,7 @@ import { NotificationBell } from '../../notifications/components/NotificationBel
 import { AdCard } from '../../premium/components/AdCard';
 import { LikeLimitPaywall } from '../../premium/components/LikeLimitPaywall';
 import { usePremiumSettings } from '../../premium/hooks/usePremiumSettings';
+import { useRewind } from '../../premium/hooks/useRewind';
 import { CardActions } from '../components/CardActions';
 import { EmptyExplore } from '../components/EmptyExplore';
 import { FilterSheet } from '../components/FilterSheet';
@@ -18,6 +19,13 @@ import { useExploreQueue } from '../hooks/useExploreQueue';
 import { useMatchingPreferences } from '../hooks/useMatchingPreferences';
 import { useSwipe } from '../hooks/useSwipe';
 import type { SwipeDirection } from '../types/matching.types';
+
+// COPY PENDIENTE: brand/copies.md no define copy para el botón de acceso a
+// "Ver quién te dio like" todavía — mismo criterio de placeholder ya usado
+// en CardActions.tsx (accessibilityLabel del botón de rewind, otra feature
+// nueva de Premium). Ver features/premium/specs/spec.md → "Ver quién te dio
+// like".
+const LIKERS_ENTRY_LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta accesible del botón "quién te dio like"]';
 
 export function ExploreScreen() {
   const router = useRouter();
@@ -30,10 +38,11 @@ export function ExploreScreen() {
   // primera card: así `adInterval` ya está resuelto (número real o `null`)
   // desde el primer render con perfiles, evitando que las ads "salten" de
   // posición si `settings` llegara después de que el usuario ya avanzó.
-  const { currentItem, currentIndex, isEmpty, isLoading, advance, refresh } = useExploreQueue({
-    isPremium: settings?.is_premium ?? false,
-    adInterval: settings?.free_swipes_per_ad ?? null,
-  });
+  const { currentItem, currentIndex, isEmpty, isLoading, advance, refresh, rewindTo } =
+    useExploreQueue({
+      isPremium: settings?.is_premium ?? false,
+      adInterval: settings?.free_swipes_per_ad ?? null,
+    });
   const { preferences, updatePreferences } = useMatchingPreferences();
 
   const {
@@ -48,6 +57,35 @@ export function ExploreScreen() {
     onSwipeComplete: advance,
   });
 
+  // Índice guardado justo antes de un swipe real (no una ad descartada) —
+  // ver features/premium/specs/plan.md → "Deshacer swipe / rewind". No es
+  // simplemente `currentIndex - 1`: si se mostró una card de ad entre medio,
+  // la posición exacta a restaurar puede no ser la inmediatamente anterior.
+  const [lastSwipedIndex, setLastSwipedIndex] = useState<number | null>(null);
+
+  const {
+    rewind,
+    isRewinding,
+    rewindCredits,
+    error: rewindError,
+  } = useRewind({
+    initialCredits: settings?.rewind_credits ?? 0,
+    onRewind: (index) => {
+      rewindTo(index);
+      setLastSwipedIndex(null);
+    },
+  });
+
+  // Mismo patrón ya usado en ConversationScreen.tsx para errores simples de
+  // una sola acción (bloquear) — Alert con el mensaje del servidor. Vía
+  // efecto (no lectura inline post-`await`) para no depender de un closure
+  // potencialmente obsoleto sobre el estado del hook.
+  useEffect(() => {
+    if (rewindError) {
+      Alert.alert('', rewindError);
+    }
+  }, [rewindError]);
+
   const showLoading = isLoading || isSettingsLoading;
   const isAd = currentItem?.kind === 'ad';
   const currentProfile = currentItem?.kind === 'profile' ? currentItem.profile : null;
@@ -58,8 +96,14 @@ export function ExploreScreen() {
       return;
     }
     if (currentProfile) {
+      setLastSwipedIndex(currentIndex);
       swipe(currentProfile, direction);
     }
+  }
+
+  function handleRewind() {
+    if (lastSwipedIndex === null) return;
+    rewind(lastSwipedIndex);
   }
 
   return (
@@ -73,6 +117,14 @@ export function ExploreScreen() {
       <View style={styles.header}>
         <Text style={styles.logo}>prixma</Text>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/likers')}
+            accessibilityLabel={LIKERS_ENTRY_LABEL_PLACEHOLDER}
+            accessibilityRole="button"
+            testID="likers-entry-button"
+          >
+            <Ionicons name="heart-circle-outline" size={26} color="#ff5e7d" />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setFiltersVisible(true)}
             accessibilityLabel="Abrir filtros"
@@ -113,6 +165,9 @@ export function ExploreScreen() {
             onSuperLike={() => handleAction('super_like')}
             hasVideo={!isAd && (currentProfile?.has_video ?? false)}
             disabled={isSwiping}
+            canRewind={rewindCredits > 0 && lastSwipedIndex !== null}
+            onRewind={handleRewind}
+            isRewinding={isRewinding}
           />
         </>
       )}

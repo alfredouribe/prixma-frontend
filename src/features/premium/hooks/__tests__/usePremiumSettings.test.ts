@@ -12,6 +12,7 @@ function buildSettings(overrides: Partial<PremiumSettings> = {}): PremiumSetting
     free_likes_per_day: 5,
     free_chat_minutes_before_ad: 1,
     chat_ad_video_url: null,
+    rewind_credits: 0,
     ...overrides,
   };
 }
