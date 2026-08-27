@@ -14,11 +14,14 @@ import { ProfileBio } from '../components/ProfileBio';
 import { ProfileInterests } from '../components/ProfileInterests';
 import { PhotoGallery } from '../components/PhotoGallery';
 import { ProfileSettingsMenu } from '../components/ProfileSettingsMenu';
+import { PremiumPerksCard } from '../components/PremiumPerksCard';
 import { VideoCard } from '../components/VideoCard';
+import { usePremiumSettings } from '../../premium/hooks/usePremiumSettings';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 
 export function MyProfileScreen() {
   const { profile, isLoading, error, reload } = useMyProfile();
+  const { settings } = usePremiumSettings();
 
   if (isLoading) {
     return (
@@ -49,6 +52,13 @@ export function MyProfileScreen() {
         <ProfileHeader profile={profile} isOwn />
 
         <ProfileStats stats={profile.statistics} />
+
+        <PremiumPerksCard
+          isPremium={settings?.is_premium ?? false}
+          premiumUntil={settings?.premium_until ?? null}
+          rewindCredits={settings?.rewind_credits ?? 0}
+          extraSuperLikes={settings?.extra_super_likes ?? 0}
+        />
 
         {profile.video_url && (
           <View style={styles.section}>

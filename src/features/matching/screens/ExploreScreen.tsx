@@ -20,12 +20,10 @@ import { useMatchingPreferences } from '../hooks/useMatchingPreferences';
 import { useSwipe } from '../hooks/useSwipe';
 import type { SwipeDirection } from '../types/matching.types';
 
-// COPY PENDIENTE: brand/copies.md no define copy para el botón de acceso a
-// "Ver quién te dio like" todavía — mismo criterio de placeholder ya usado
-// en CardActions.tsx (accessibilityLabel del botón de rewind, otra feature
-// nueva de Premium). Ver features/premium/specs/spec.md → "Ver quién te dio
-// like".
-const LIKERS_ENTRY_LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta accesible del botón "quién te dio like"]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese).
+const LIKERS_ENTRY_LABEL = 'Ver quién te dio like';
 
 export function ExploreScreen() {
   const router = useRouter();
@@ -119,7 +117,7 @@ export function ExploreScreen() {
         <View style={styles.headerActions}>
           <TouchableOpacity
             onPress={() => router.push('/(app)/likers')}
-            accessibilityLabel={LIKERS_ENTRY_LABEL_PLACEHOLDER}
+            accessibilityLabel={LIKERS_ENTRY_LABEL}
             accessibilityRole="button"
             testID="likers-entry-button"
           >

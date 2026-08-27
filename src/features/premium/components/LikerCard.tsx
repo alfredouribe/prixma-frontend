@@ -3,11 +3,11 @@ import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } fr
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { ExploreProfile } from '../../matching/types/matching.types';
 
-// COPY PENDIENTE: brand/copies.md no define copy para el botón de "dar
-// like" desde esta lista todavía — mismo criterio de placeholder ya usado
-// en CardActions.tsx (accessibilityLabel del botón de rewind).
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese).
 function likeButtonLabel(displayName: string): string {
-  return `[COPY PENDIENTE: etiqueta accesible de "dar like" — ${displayName}]`;
+  return `Dar like a ${displayName}`;
 }
 
 interface LikerCardProps {

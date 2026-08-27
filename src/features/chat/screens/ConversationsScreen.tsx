@@ -15,11 +15,13 @@ type Tab = 'matches' | 'requests';
 
 // Copy exacto: brand/copies.md → "Chat" → "Bandeja de mensajes".
 const EMPTY_MATCHES = 'Haz match para empezar a platicar';
-// COPY PENDIENTE: la pestaña "Solicitudes" queda construida pero sin
-// exponerse (decisión 2026-07-19, ver features/chat/specs/spec.md) — no hay
-// forma de llegar a este estado vacío todavía, así que su copy queda
-// pendiente de aprobación para cuando se active esa fase.
-const EMPTY_REQUESTS = '[COPY PENDIENTE: estado vacío — sin solicitudes]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión"). La pestaña "Solicitudes" sigue sin
+// exponerse (decisión 2026-07-19, ver features/chat/specs/spec.md), así que
+// este texto no es alcanzable todavía — se escribió de todos modos para no
+// dejar el placeholder visible el día que se active esa fase sin revisar
+// antes con Mafer.
+const EMPTY_REQUESTS = 'Cuando alguien te escriba sin match, aparecerá aquí.';
 
 // Copy exacto: brand/copies.md → "Chats".
 export function ConversationsScreen() {

@@ -4,13 +4,13 @@ import Animated from 'react-native-reanimated';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import { useSwipeGesture } from '../../matching/hooks/useSwipeGesture';
 
-// COPY PENDIENTE: brand/copies.md no define copy promocional para la card
-// de ads de Explorar todavía — mismo criterio de placeholder ya usado en
-// EventsScreen.tsx / RequestModal.tsx (ver esos archivos). El botón sí usa
-// copy ya aprobado ("Actualiza tu plan", brand/copies.md → "Mi perfil" →
-// Opciones de configuración → Premium).
-const TITLE_PLACEHOLDER = '[COPY PENDIENTE: título promocional de Prixma+]';
-const SUBTITLE_PLACEHOLDER = '[COPY PENDIENTE: subtítulo promocional de Prixma+]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese). El botón sí usa copy ya aprobado ("Actualiza tu
+// plan", brand/copies.md → "Mi perfil" → Opciones de configuración →
+// Premium).
+const TITLE = 'Conecta sin límites';
+const SUBTITLE = 'Likes ilimitados, cero anuncios y funciones exclusivas para ti.';
 
 interface AdCardProps {
   onDismiss: () => void;
@@ -32,8 +32,8 @@ export function AdCard({ onDismiss }: AdCardProps) {
       <Animated.View style={[styles.card, cardStyle]} testID="ad-card">
         <View style={styles.content}>
           <Text style={styles.brand}>Prixma+</Text>
-          <Text style={styles.title}>{TITLE_PLACEHOLDER}</Text>
-          <Text style={styles.subtitle}>{SUBTITLE_PLACEHOLDER}</Text>
+          <Text style={styles.title}>{TITLE}</Text>
+          <Text style={styles.subtitle}>{SUBTITLE}</Text>
           <View style={styles.ctaButton}>
             <Text style={styles.ctaText}>Actualiza tu plan</Text>
           </View>

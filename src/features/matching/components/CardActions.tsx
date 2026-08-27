@@ -4,13 +4,10 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { colors, radius, spacing, surfaces } from '../../../lib/theme';
 import type { Intention } from '../types/matching.types';
 
-// COPY PENDIENTE: brand/copies.md no define copy para el botón de deshacer
-// swipe todavía — mismo criterio de placeholder ya usado en otras partes
-// del proyecto (ver AdCard.tsx / LikeLimitPaywall.tsx). Es un botón
-// solo-ícono, pero necesita texto real en español para su
-// accessibilityLabel igual que cualquier otro string visible/anunciado al
-// usuario — no se inventa mientras no esté aprobado.
-const REWIND_LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta accesible del botón "deshacer swipe"]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese).
+const REWIND_LABEL = 'Deshacer';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -125,7 +122,7 @@ export function CardActions({
           style={[styles.button, styles.rewind]}
           onPress={onRewind}
           disabled={disabled || isRewinding}
-          accessibilityLabel={REWIND_LABEL_PLACEHOLDER}
+          accessibilityLabel={REWIND_LABEL}
           accessibilityRole="button"
           testID="rewind-button"
         >

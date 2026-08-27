@@ -9,11 +9,10 @@ import { NotificationBell } from '../../notifications/components/NotificationBel
 import { colors, spacing, surfaces, text, typography } from '../../../lib/theme';
 import type { Event } from '../types/event.types';
 
-// COPY PENDIENTE: brand/copies.md → "Eventos" no define un estado vacío de
-// lista (sin eventos con el filtro actual). Mismo criterio ya usado en
-// features/chat/screens/ConversationsScreen.tsx para "Solicitudes" — se deja
-// un marcador visible en vez de inventar texto, pendiente de aprobación.
-const EMPTY_EVENTS = '[COPY PENDIENTE: estado vacío — sin eventos]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese).
+const EMPTY_EVENTS = 'Todavía no hay eventos cerca de ti — vuelve pronto.';
 
 // Copy exacto: brand/copies.md → "Eventos".
 export function EventsScreen() {

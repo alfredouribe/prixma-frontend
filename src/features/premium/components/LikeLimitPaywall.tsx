@@ -1,14 +1,14 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 
-// COPY PENDIENTE: brand/copies.md no define copy del paywall de likes
-// todavía — mismo criterio de placeholder ya usado en EventsScreen.tsx /
-// RequestModal.tsx (ver esos archivos). El botón "Actualiza tu plan" sí es
-// copy ya aprobado (brand/copies.md → "Mi perfil" → Opciones de
-// configuración → Premium).
-const TITLE_PLACEHOLDER = '[COPY PENDIENTE: título del paywall de likes]';
-const SUBTITLE_PLACEHOLDER = '[COPY PENDIENTE: subtítulo del paywall de likes]';
-const DISMISS_PLACEHOLDER = '[COPY PENDIENTE: texto del botón "ahora no"]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese). El botón "Actualiza tu plan" sí es copy ya
+// aprobado (brand/copies.md → "Mi perfil" → Opciones de configuración →
+// Premium).
+const TITLE = 'Se acabaron tus likes de hoy';
+const SUBTITLE = 'Con Prixma+ tienes likes ilimitados, sin esperar a mañana.';
+const DISMISS = 'Ahora no';
 
 interface LikeLimitPaywallProps {
   visible: boolean;
@@ -29,8 +29,8 @@ export function LikeLimitPaywall({ visible, onClose, onUpgrade }: LikeLimitPaywa
       <View style={styles.overlay}>
         <View style={styles.card} testID="like-limit-paywall">
           <Text style={styles.brand}>Prixma+</Text>
-          <Text style={styles.title}>{TITLE_PLACEHOLDER}</Text>
-          <Text style={styles.subtitle}>{SUBTITLE_PLACEHOLDER}</Text>
+          <Text style={styles.title}>{TITLE}</Text>
+          <Text style={styles.subtitle}>{SUBTITLE}</Text>
 
           <TouchableOpacity
             style={styles.upgradeBtn}
@@ -48,7 +48,7 @@ export function LikeLimitPaywall({ visible, onClose, onUpgrade }: LikeLimitPaywa
             accessibilityRole="button"
             testID="like-limit-paywall-close"
           >
-            <Text style={styles.closeBtnText}>{DISMISS_PLACEHOLDER}</Text>
+            <Text style={styles.closeBtnText}>{DISMISS}</Text>
           </TouchableOpacity>
         </View>
       </View>

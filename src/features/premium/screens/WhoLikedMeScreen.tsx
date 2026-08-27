@@ -9,16 +9,16 @@ import { useMyProfile } from '../../profile/hooks/useMyProfile';
 import { LikerCard } from '../components/LikerCard';
 import { useLikers } from '../hooks/useLikers';
 
-// COPY PENDIENTE: brand/copies.md no define copy para "Ver quién te dio
-// like" todavía — mismo criterio de placeholder ya usado en
-// LikeLimitPaywall.tsx / AdCard.tsx / CardActions.tsx (ver esos archivos).
-// El botón "Actualiza tu plan" sí es copy ya aprobado (brand/copies.md →
-// "Mi perfil" → Opciones de configuración → Premium).
-const SCREEN_TITLE_PLACEHOLDER = '[COPY PENDIENTE: título de la pantalla "quién te dio like"]';
-const PAYWALL_TITLE_PLACEHOLDER = '[COPY PENDIENTE: título del paywall de "quién te dio like"]';
-const PAYWALL_SUBTITLE_PLACEHOLDER = '[COPY PENDIENTE: subtítulo del paywall de "quién te dio like"]';
-const EMPTY_STATE_PLACEHOLDER = '[COPY PENDIENTE: estado vacío — nadie te ha dado like todavía]';
-const BACK_LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta accesible del botón atrás]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese). El botón "Actualiza tu plan" sí es copy ya
+// aprobado (brand/copies.md → "Mi perfil" → Opciones de configuración →
+// Premium).
+const SCREEN_TITLE = 'Te dieron like';
+const PAYWALL_TITLE = 'Descubre quién te dio like';
+const PAYWALL_SUBTITLE = 'Con Prixma+ ves a todas las personas que ya se fijaron en ti.';
+const EMPTY_STATE = 'Todavía nadie te ha dado like — sigue explorando.';
+const BACK_LABEL = 'Volver';
 
 /**
  * Ver quién te dio like — lista/grid de perfiles que dieron like/super_like
@@ -65,13 +65,13 @@ export function WhoLikedMeScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
           activeOpacity={0.7}
-          accessibilityLabel={BACK_LABEL_PLACEHOLDER}
+          accessibilityLabel={BACK_LABEL}
           accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={20} color={text.primary} />
         </TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>
-          {SCREEN_TITLE_PLACEHOLDER}
+          {SCREEN_TITLE}
         </Text>
         <View style={styles.backButton} />
       </View>
@@ -84,8 +84,8 @@ export function WhoLikedMeScreen() {
         <View style={styles.centered}>
           <View style={styles.paywallCard} testID="likers-paywall">
             <Text style={styles.paywallBrand}>Prixma+</Text>
-            <Text style={styles.paywallTitle}>{PAYWALL_TITLE_PLACEHOLDER}</Text>
-            <Text style={styles.paywallSubtitle}>{PAYWALL_SUBTITLE_PLACEHOLDER}</Text>
+            <Text style={styles.paywallTitle}>{PAYWALL_TITLE}</Text>
+            <Text style={styles.paywallSubtitle}>{PAYWALL_SUBTITLE}</Text>
             <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85} accessibilityRole="button">
               <Text style={styles.upgradeBtnText}>Actualiza tu plan</Text>
             </TouchableOpacity>
@@ -93,7 +93,7 @@ export function WhoLikedMeScreen() {
         </View>
       ) : likers.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>{EMPTY_STATE_PLACEHOLDER}</Text>
+          <Text style={styles.emptyText}>{EMPTY_STATE}</Text>
         </View>
       ) : (
         <FlatList

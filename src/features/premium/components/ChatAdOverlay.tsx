@@ -3,10 +3,10 @@ import { Modal, StyleSheet, Text, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { spacing, text, typography } from '../../../lib/theme';
 
-// COPY PENDIENTE: brand/copies.md no define copy del overlay de ads del
-// chat todavía — mismo criterio de placeholder ya usado en EventsScreen.tsx
-// / RequestModal.tsx (ver esos archivos).
-const LABEL_PLACEHOLDER = '[COPY PENDIENTE: etiqueta "Publicidad"]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese).
+const LABEL = 'Publicidad';
 
 interface ChatAdOverlayProps {
   visible: boolean;
@@ -51,7 +51,7 @@ export function ChatAdOverlay({ visible, videoUrl, onFinish }: ChatAdOverlayProp
           contentFit="contain"
           nativeControls={false}
         />
-        <Text style={styles.label}>{LABEL_PLACEHOLDER}</Text>
+        <Text style={styles.label}>{LABEL}</Text>
       </View>
     </Modal>
   );

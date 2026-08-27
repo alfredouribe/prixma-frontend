@@ -8,11 +8,13 @@ jest.mock('../../services/premiumService');
 function buildSettings(overrides: Partial<PremiumSettings> = {}): PremiumSettings {
   return {
     is_premium: false,
+    premium_until: null,
     free_swipes_per_ad: 5,
     free_likes_per_day: 5,
     free_chat_minutes_before_ad: 1,
     chat_ad_video_url: null,
     rewind_credits: 0,
+    extra_super_likes: 0,
     ...overrides,
   };
 }

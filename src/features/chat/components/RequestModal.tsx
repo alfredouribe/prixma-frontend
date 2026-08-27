@@ -13,14 +13,11 @@ import { colors, radius, spacing, surfaces, text, typography } from '../../../li
 
 const MAX_MESSAGE_LENGTH = 500;
 
-// COPY PENDIENTE: brand/copies.md no define título ni texto del botón de
-// envío para este modal (solicitud de mensaje sin match previo). El
-// placeholder del input sí está aprobado (mismo que el input de una
-// conversación ya abierta, brand/copies.md → "Chats"). El botón de envío
-// reusa "Enviar mensaje" (ya aprobado en brand/copies.md para la misma
-// intención de usuario: iniciar contacto) — ver reporte final del agente
-// para la decisión completa.
-const TITLE_PLACEHOLDER = '[COPY PENDIENTE: título del modal de solicitud]';
+// Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
+// "Borradores pendientes de revisión" para el detalle y la condición de
+// revisión cuando regrese). El placeholder del input y el botón de envío
+// ya usaban copy aprobado, sin cambios.
+const TITLE = 'Envíale un mensaje a';
 
 interface RequestModalProps {
   visible: boolean;
@@ -61,7 +58,7 @@ export function RequestModal({
         <View style={styles.handle} />
 
         <Text style={styles.title}>
-          {TITLE_PLACEHOLDER} {targetName}
+          {TITLE} {targetName}
         </Text>
 
         <TextInput
