@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import { MatchOverlay } from '../../matching/components/MatchOverlay';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
+import { usePurchasePrixmaPlus } from '../../subscriptions/hooks/usePurchasePrixmaPlus';
 import { LikerCard } from '../components/LikerCard';
 import { useLikers } from '../hooks/useLikers';
 
@@ -37,12 +38,14 @@ export function WhoLikedMeScreen() {
     isLoading,
     needsUpgrade,
     error,
+    refresh,
     likeBack,
     likingProfileId,
     likeError,
     matchResult,
     dismissMatch,
   } = useLikers();
+  const { purchase, isPurchasing, error: purchaseError } = usePurchasePrixmaPlus();
 
   // Mismo patrón ya usado en ExploreScreen.tsx para el error de rewind —
   // Alert con el mensaje del servidor, vía efecto.
@@ -57,6 +60,23 @@ export function WhoLikedMeScreen() {
       Alert.alert('', likeError);
     }
   }, [likeError]);
+
+  useEffect(() => {
+    if (purchaseError) {
+      Alert.alert('', purchaseError);
+    }
+  }, [purchaseError]);
+
+  // Tras una compra exitosa, se vuelve a pedir /matching/likers para que
+  // `needsUpgrade` se re-evalúe con el estado real de RevenueCat/backend —
+  // ver features/subscriptions/specs/plan.md → "Compra real desde los
+  // paywalls existentes".
+  async function handleUpgrade() {
+    const success = await purchase();
+    if (success) {
+      refresh();
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -86,8 +106,18 @@ export function WhoLikedMeScreen() {
             <Text style={styles.paywallBrand}>Prixma+</Text>
             <Text style={styles.paywallTitle}>{PAYWALL_TITLE}</Text>
             <Text style={styles.paywallSubtitle}>{PAYWALL_SUBTITLE}</Text>
-            <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85} accessibilityRole="button">
-              <Text style={styles.upgradeBtnText}>Actualiza tu plan</Text>
+            <TouchableOpacity
+              style={styles.upgradeBtn}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              onPress={handleUpgrade}
+              disabled={isPurchasing}
+            >
+              {isPurchasing ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.upgradeBtnText}>Actualiza tu plan</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

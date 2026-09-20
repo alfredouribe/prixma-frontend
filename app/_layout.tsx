@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/stores/authStore';
 import { authService } from '../src/features/auth/services/authService';
 import { usePushNotificationRouter } from '../src/features/notifications/hooks/usePushNotificationRouter';
+import { useConfigurePurchases } from '../src/features/subscriptions/hooks/useConfigurePurchases';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +21,7 @@ export default function RootLayout() {
 
   const [authReady, setAuthReady] = useState(false);
   const { restoreAuth, setAuth } = useAuthStore();
+  const { configurePurchases } = useConfigurePurchases();
 
   useEffect(() => {
     async function bootstrap() {
@@ -28,6 +30,13 @@ export default function RootLayout() {
         try {
           const user = await authService.getMe();
           await setAuth(user, token);
+          // Best-effort, nunca bloquea el arranque — este es el camino más
+          // común de uso real (usuario que ya tenía sesión reabre la app),
+          // así que RevenueCat necesita configurarse aquí y no solo en
+          // useLogin.ts (login interactivo). Ver
+          // features/subscriptions/specs/plan.md → "Dónde vive
+          // Purchases.configure()".
+          configurePurchases(user.id).catch(() => {});
         } catch {
           // Token inválido o expirado — se queda en (auth)
         }

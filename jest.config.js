@@ -10,5 +10,6 @@ module.exports = {
     '^react-native-gesture-handler$': '<rootDir>/__mocks__/react-native-gesture-handler.ts',
     '^@react-native-community/slider$': '<rootDir>/__mocks__/@react-native-community/slider.tsx',
     '^react-native-maps$': '<rootDir>/__mocks__/react-native-maps.tsx',
+    '^react-native-purchases$': '<rootDir>/__mocks__/react-native-purchases.ts',
   },
 };

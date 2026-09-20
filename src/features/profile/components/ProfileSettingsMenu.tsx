@@ -65,6 +65,7 @@ const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> =
   notifications: '/profile/notifications',
   blocked: '/profile/blocked',
   geoBlocks: '/profile/geo-blocks',
+  premium: '/profile/subscription',
 };
 
 interface ProfileSettingsMenuProps {

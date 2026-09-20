@@ -1,5 +1,7 @@
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
+import { usePurchasePrixmaPlus } from '../../subscriptions/hooks/usePurchasePrixmaPlus';
 
 // Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
 // "Borradores pendientes de revisión" para el detalle y la condición de
@@ -13,17 +15,40 @@ const DISMISS = 'Ahora no';
 interface LikeLimitPaywallProps {
   visible: boolean;
   onClose: () => void;
+  // Opcional — se llama además de (no en vez de) la compra real, solo si el
+  // llamador necesita reaccionar a un upgrade exitoso más allá de cerrar el
+  // modal (ver ExploreScreen.tsx, que hoy no lo usa). El propio componente
+  // ya dispara la compra real vía usePurchasePrixmaPlus.
   onUpgrade?: () => void;
 }
 
 /**
  * Se muestra cuando el backend rechaza un like/super_like con 429 por haber
  * alcanzado `free_likes_per_day` (ver `useSwipe.ts` → `isLikeLimitError`).
- * `onUpgrade` no lleva a ningún lado real todavía — no existe pantalla de
- * compra (ver features/premium/specs/spec.md → "Fuera de alcance"). Si no
- * se provee, el botón simplemente cierra el modal.
+ * "Actualiza tu plan" dispara la compra real de Prixma+ (RevenueCat/Google
+ * Play Billing) vía `usePurchasePrixmaPlus` — ver
+ * features/subscriptions/specs/plan.md → "Compra real desde los paywalls
+ * existentes". Una compra exitosa cierra el modal (y llama a `onUpgrade` si
+ * se proveyó); una cancelación del usuario no muestra nada; un error real
+ * muestra un Alert con el mensaje del hook.
  */
 export function LikeLimitPaywall({ visible, onClose, onUpgrade }: LikeLimitPaywallProps) {
+  const { purchase, isPurchasing, error } = usePurchasePrixmaPlus();
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('', error);
+    }
+  }, [error]);
+
+  async function handleUpgrade() {
+    const success = await purchase();
+    if (success) {
+      onUpgrade?.();
+      onClose();
+    }
+  }
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -34,11 +59,16 @@ export function LikeLimitPaywall({ visible, onClose, onUpgrade }: LikeLimitPaywa
 
           <TouchableOpacity
             style={styles.upgradeBtn}
-            onPress={onUpgrade ?? onClose}
+            onPress={handleUpgrade}
             activeOpacity={0.85}
             accessibilityRole="button"
+            disabled={isPurchasing}
           >
-            <Text style={styles.upgradeBtnText}>Actualiza tu plan</Text>
+            {isPurchasing ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={styles.upgradeBtnText}>Actualiza tu plan</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity

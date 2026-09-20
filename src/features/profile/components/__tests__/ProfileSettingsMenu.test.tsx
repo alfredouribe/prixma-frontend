@@ -35,4 +35,12 @@ describe('ProfileSettingsMenu', () => {
 
     expect(router.push).toHaveBeenCalledWith('/profile/geo-blocks');
   });
+
+  it('navega a /profile/subscription al tocar Prixma+', () => {
+    render(<ProfileSettingsMenu verificationStatus="verified" />);
+
+    fireEvent.press(screen.getByText('Prixma+'));
+
+    expect(router.push).toHaveBeenCalledWith('/profile/subscription');
+  });
 });

@@ -4,6 +4,7 @@ import { useLogin } from '../useLogin';
 import { authService } from '../../services/authService';
 import { useAuthStore } from '../../../../stores/authStore';
 import { useRegisterPushToken } from '../../../notifications/hooks/useRegisterPushToken';
+import { useConfigurePurchases } from '../../../subscriptions/hooks/useConfigurePurchases';
 
 jest.mock('../../services/authService');
 jest.mock('expo-router');
@@ -12,6 +13,9 @@ jest.mock('expo-router');
 // flujo de token/sesión), se mockea aparte igual que cualquier otro hook del
 // que useLogin depende (no es el hook bajo prueba).
 jest.mock('../../../notifications/hooks/useRegisterPushToken');
+// Mismo criterio — `useConfigurePurchases` llama al SDK nativo de
+// RevenueCat, fuera del alcance de este test.
+jest.mock('../../../subscriptions/hooks/useConfigurePurchases');
 
 const mockUser = {
   id: 'uuid-1',
@@ -23,12 +27,14 @@ const mockUser = {
 };
 
 const registerPushToken = jest.fn().mockResolvedValue(undefined);
+const configurePurchases = jest.fn().mockResolvedValue(undefined);
 
 beforeEach(() => {
   jest.clearAllMocks();
   useAuthStore.setState({ user: null, isAuthenticated: false });
   (SecureStore.setItemAsync as jest.Mock).mockResolvedValue(undefined);
   (useRegisterPushToken as jest.Mock).mockReturnValue({ registerPushToken });
+  (useConfigurePurchases as jest.Mock).mockReturnValue({ configurePurchases });
 });
 
 describe('useLogin', () => {
@@ -69,6 +75,38 @@ describe('useLogin', () => {
       token: 'test-token-abc',
     });
     registerPushToken.mockRejectedValueOnce(new Error('should never actually reject, but just in case'));
+
+    const { result } = await renderHook(() => useLogin());
+
+    await act(async () => {
+      await result.current.handleLogin({ email: 'user@example.com', password: 'password123' });
+    });
+
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('configura RevenueCat con el appUserID del usuario tras un login exitoso', async () => {
+    (authService.login as jest.Mock).mockResolvedValue({
+      user: mockUser,
+      token: 'test-token-abc',
+    });
+
+    const { result } = await renderHook(() => useLogin());
+
+    await act(async () => {
+      await result.current.handleLogin({ email: 'user@example.com', password: 'password123' });
+    });
+
+    expect(configurePurchases).toHaveBeenCalledWith('uuid-1');
+  });
+
+  it('login still succeeds even if configuring RevenueCat fails', async () => {
+    (authService.login as jest.Mock).mockResolvedValue({
+      user: mockUser,
+      token: 'test-token-abc',
+    });
+    configurePurchases.mockRejectedValueOnce(new Error('should never actually reject, but just in case'));
 
     const { result } = await renderHook(() => useLogin());
 

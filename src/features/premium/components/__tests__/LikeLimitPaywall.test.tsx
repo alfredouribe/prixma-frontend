@@ -1,5 +1,15 @@
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { LikeLimitPaywall } from '../LikeLimitPaywall';
+import { usePurchasePrixmaPlus } from '../../../subscriptions/hooks/usePurchasePrixmaPlus';
+
+jest.mock('../../../subscriptions/hooks/usePurchasePrixmaPlus');
+
+const purchase = jest.fn();
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  (usePurchasePrixmaPlus as jest.Mock).mockReturnValue({ purchase, isPurchasing: false, error: null });
+});
 
 describe('LikeLimitPaywall', () => {
   it('muestra el paywall cuando visible es true', () => {
@@ -19,23 +29,58 @@ describe('LikeLimitPaywall', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('llama a onUpgrade al tocar "Actualiza tu plan" si se provee', () => {
+  it('al tocar "Actualiza tu plan", dispara la compra real', () => {
+    const { getByText } = render(<LikeLimitPaywall visible={true} onClose={jest.fn()} />);
+
+    fireEvent.press(getByText('Actualiza tu plan'));
+
+    expect(purchase).toHaveBeenCalledTimes(1);
+  });
+
+  it('compra exitosa: llama a onUpgrade y a onClose', async () => {
+    purchase.mockResolvedValue(true);
+    const onClose = jest.fn();
     const onUpgrade = jest.fn();
     const { getByText } = render(
-      <LikeLimitPaywall visible={true} onClose={jest.fn()} onUpgrade={onUpgrade} />,
+      <LikeLimitPaywall visible={true} onClose={onClose} onUpgrade={onUpgrade} />,
     );
 
     fireEvent.press(getByText('Actualiza tu plan'));
 
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
     expect(onUpgrade).toHaveBeenCalledTimes(1);
   });
 
-  it('sin onUpgrade, tocar "Actualiza tu plan" simplemente cierra el modal (no hay pantalla de compra todavía)', () => {
+  it('sin onUpgrade, una compra exitosa solo cierra el modal', async () => {
+    purchase.mockResolvedValue(true);
     const onClose = jest.fn();
     const { getByText } = render(<LikeLimitPaywall visible={true} onClose={onClose} />);
 
     fireEvent.press(getByText('Actualiza tu plan'));
 
-    expect(onClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  it('compra no completada (cancelación o error): no llama ni a onUpgrade ni a onClose', async () => {
+    purchase.mockResolvedValue(false);
+    const onClose = jest.fn();
+    const onUpgrade = jest.fn();
+    const { getByText } = render(
+      <LikeLimitPaywall visible={true} onClose={onClose} onUpgrade={onUpgrade} />,
+    );
+
+    fireEvent.press(getByText('Actualiza tu plan'));
+
+    await waitFor(() => expect(purchase).toHaveBeenCalledTimes(1));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onUpgrade).not.toHaveBeenCalled();
+  });
+
+  it('muestra un indicador de carga y deshabilita el botón mientras isPurchasing es true', () => {
+    (usePurchasePrixmaPlus as jest.Mock).mockReturnValue({ purchase, isPurchasing: true, error: null });
+
+    const { queryByText } = render(<LikeLimitPaywall visible={true} onClose={jest.fn()} />);
+
+    expect(queryByText('Actualiza tu plan')).toBeNull();
   });
 });
