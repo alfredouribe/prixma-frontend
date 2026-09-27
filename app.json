@@ -42,7 +42,18 @@
           "locationWhenInUsePermission": "Prixma necesita tu ubicación para mostrarte personas cercanas."
         }
       ],
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash_loading_screen.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#0d0d14",
+          "dark": {
+            "image": "./assets/images/splash_loading_screen.png",
+            "backgroundColor": "#0d0d14"
+          }
+        }
+      ],
       "expo-video",
       [
         "expo-notifications",
