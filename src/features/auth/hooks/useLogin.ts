@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../../stores/authStore';
 import { authService } from '../services/authService';
 import { extractApiError } from '../../../lib/extractApiError';
@@ -8,7 +7,6 @@ import { useConfigurePurchases } from '../../subscriptions/hooks/useConfigurePur
 import type { LoginPayload } from '../types/auth.types';
 
 export function useLogin() {
-  const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const { registerPushToken } = useRegisterPushToken();
   const { configurePurchases } = useConfigurePurchases();
@@ -28,7 +26,13 @@ export function useLogin() {
       // en la práctica.
       registerPushToken().catch(() => {});
       configurePurchases(user.id).catch(() => {});
-      router.replace(user.onboarding_completed ? '/(app)/(tabs)' : '/(onboarding)/identity');
+      // No navegar aquí a mano — `setAuth()` ya dispara el `<Redirect>`
+      // declarativo de `app/(auth)/_layout.tsx` (mismo destino, calculado
+      // igual). Tener las dos navegaciones (esta imperativa + esa reactiva)
+      // corriendo casi al mismo tiempo causaba un crash real de Fabric
+      // confirmado en producción vía Sentry (2026-09-27):
+      // `RetryableMountingLayerException: Unable to find viewState for tag
+      // X` — dos transiciones de pantalla compitiendo por la misma vista.
     } catch (err) {
       setError(extractApiError(err, 'Correo o contraseña incorrectos. Intenta de nuevo.'));
     } finally {

@@ -6,9 +6,14 @@ import { colors, radius, spacing, surfaces, text, typography } from '../../../li
 
 interface UploadDocumentScreenProps {
   onSubmitted?: () => void;
+  // Opcional a propósito — ver la misma nota en VerificationTeaserScreen.tsx:
+  // este componente lo reutiliza tanto el gate duro de Explorar (sin
+  // `onBack`) como la entrada real desde Configuración del perfil (con
+  // `onBack`).
+  onBack?: () => void;
 }
 
-export function UploadDocumentScreen({ onSubmitted }: UploadDocumentScreenProps) {
+export function UploadDocumentScreen({ onSubmitted, onBack }: UploadDocumentScreenProps) {
   const {
     documentUri,
     isSubmitting,
@@ -24,6 +29,17 @@ export function UploadDocumentScreen({ onSubmitted }: UploadDocumentScreenProps)
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {onBack && (
+          <TouchableOpacity
+            onPress={onBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+          >
+            <Ionicons name="arrow-back" size={20} color={text.primary} />
+          </TouchableOpacity>
+        )}
         <Text style={styles.title}>Verifica tu identidad</Text>
         <Text style={styles.subtitle}>
           Este paso nos protege a todes en comunidad. Tranquile, esto solo lo utilizaremos para
@@ -82,6 +98,17 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: surfaces.bg },
   scroll: { flex: 1 },
   content: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, paddingBottom: spacing.xxxl },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
   title: { ...typography.h1, color: text.primary, marginBottom: spacing.sm },
   subtitle: { ...typography.body, color: text.secondary, marginBottom: spacing.lg },
   instructions: { ...typography.small, color: text.secondary, marginBottom: spacing.xl },

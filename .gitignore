@@ -45,3 +45,5 @@ yarn-error.*
 
 # brand assets (symlink al repo de specs — no commitear aquí)
 brand/
+
+.env.local

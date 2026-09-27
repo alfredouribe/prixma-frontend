@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { UseFormSetError } from 'react-hook-form';
-import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../../stores/authStore';
 import { authService } from '../services/authService';
 import { extractApiError, extractFieldErrors } from '../../../lib/extractApiError';
@@ -8,7 +7,6 @@ import type { RegisterPayload } from '../types/auth.types';
 import type { RegisterFormData } from '../schemas/registerSchema';
 
 export function useRegister() {
-  const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +20,10 @@ export function useRegister() {
     try {
       const { user, token } = await authService.register(payload);
       await setAuth(user, token);
-      router.replace('/(onboarding)/identity');
+      // No navegar aquí a mano — ver la nota equivalente en useLogin.ts.
+      // `setAuth()` ya dispara el `<Redirect>` declarativo de
+      // `app/(auth)/_layout.tsx` (mismo destino: un usuario recién
+      // registrado siempre tiene `onboarding_completed: false`).
     } catch (err) {
       const fieldErrors = extractFieldErrors(err);
       if (fieldErrors) {

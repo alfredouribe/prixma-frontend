@@ -8,13 +8,12 @@ import { premiumService } from '../../premium/services/premiumService';
 // reales de RevenueCat".
 const PRIXMA_PLUS_ENTITLEMENT = 'Prixma+';
 
-// [COPY PENDIENTE] — sin texto aprobado en brand/copies.md para mensajes de
-// error de compra real (ver features/subscriptions/specs/tasks.md → "Copy —
-// regla dura del proyecto"). No se muestra ningún mensaje cuando el usuario
-// simplemente cancela el diálogo de compra — eso no es un error.
-const OFFER_NOT_AVAILABLE_ERROR =
-  '[COPY PENDIENTE] La oferta de Prixma+ no está disponible en este momento. Intenta de nuevo más tarde.';
-const GENERIC_PURCHASE_ERROR = '[COPY PENDIENTE] No se pudo completar la compra. Intenta de nuevo.';
+// Copy borrador, ver brand/copies.md → "⚠️ Borradores pendientes de
+// revisión (Mafer)" → "Compra real de Prixma+" (autorizado por el humano
+// 2026-09-27). No se muestra ningún mensaje cuando el usuario simplemente
+// cancela el diálogo de compra — eso no es un error.
+const OFFER_NOT_AVAILABLE_ERROR = 'La oferta de Prixma+ no está disponible en este momento. Intenta de nuevo más tarde.';
+const GENERIC_PURCHASE_ERROR = 'No se pudo completar la compra. Intenta de nuevo.';
 
 function isUserCancelledError(err: unknown): boolean {
   const code = (err as Partial<PurchasesError>)?.code;

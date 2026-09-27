@@ -174,6 +174,7 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
               setValue('longitude', lng, { shouldValidate: true });
             }}
           />
+          {errors.city && <Text style={styles.fieldError}>{errors.city.message}</Text>}
         </Field>
 
         {/* Bio */}

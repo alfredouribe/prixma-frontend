@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
 import { VerificationTeaserScreen } from './VerificationTeaserScreen';
 import { UploadDocumentScreen } from './UploadDocumentScreen';
@@ -23,6 +24,7 @@ export function VerificationSettingsScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={() => router.back()} />
         <ActivityIndicator color={colors.purple} size="large" />
       </SafeAreaView>
     );
@@ -31,6 +33,7 @@ export function VerificationSettingsScreen() {
   if (error || !profile) {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={() => router.back()} />
         <Text style={styles.errorText}>{error ?? 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'}</Text>
         <TouchableOpacity style={styles.button} onPress={reload} activeOpacity={0.8}>
           <Text style={styles.buttonLabel}>Reintentar</Text>
@@ -42,6 +45,7 @@ export function VerificationSettingsScreen() {
   if (showUploadForm) {
     return (
       <UploadDocumentScreen
+        onBack={() => router.back()}
         onSubmitted={() => {
           setShowUploadForm(false);
           reload();
@@ -51,14 +55,30 @@ export function VerificationSettingsScreen() {
   }
 
   if (profile.verification_status === 'unverified') {
-    return <VerificationTeaserScreen onVerifyNow={() => setShowUploadForm(true)} />;
+    return <VerificationTeaserScreen onVerifyNow={() => setShowUploadForm(true)} onBack={() => router.back()} />;
   }
 
   return (
     <VerificationStatusScreen
       onRetry={() => setShowUploadForm(true)}
       onGoToExplore={() => router.push('/explore')}
+      onBack={() => router.back()}
     />
+  );
+}
+
+function BackButton({ onBack }: { onBack: () => void }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <TouchableOpacity
+      onPress={onBack}
+      style={[styles.backButton, { top: insets.top + spacing.md }]}
+      activeOpacity={0.7}
+      accessibilityLabel="Volver"
+      accessibilityRole="button"
+    >
+      <Ionicons name="arrow-back" size={20} color={text.primary} />
+    </TouchableOpacity>
   );
 }
 
@@ -70,6 +90,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
+  },
+  backButton: {
+    // `top` real se calcula en runtime con `insets.top` — ver la nota
+    // completa en VerificationTeaserScreen.tsx (bug real 2026-09-27).
+    position: 'absolute',
+    left: spacing.xl,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorText: { ...typography.body, color: text.secondary, textAlign: 'center' },
   button: {

@@ -9,25 +9,24 @@ import { usePurchasePrixmaPlus } from '../hooks/usePurchasePrixmaPlus';
 import { useRestorePurchases } from '../hooks/useRestorePurchases';
 import { useSubscriptionStatus } from '../hooks/useSubscriptionStatus';
 
-// [COPY PENDIENTE] — sin texto aprobado en brand/copies.md para esta
-// pantalla ni para sus estados (ver features/subscriptions/specs/tasks.md →
-// "Copy — regla dura del proyecto"). "Prixma+" y "Actualiza tu plan" SÍ son
-// copy ya aprobado (brand/copies.md línea 360) y se reusan tal cual, sin
-// marcar.
-const SCREEN_TITLE = '[COPY PENDIENTE] Mi suscripción';
+// Copy borrador, ver brand/copies.md → "⚠️ Borradores pendientes de
+// revisión (Mafer)" → "Mi suscripción" (autorizado por el humano
+// 2026-09-27 para destrabar la pantalla, misma condición que el resto de
+// esa sección: se revisa con Mafer cuando regrese). "Prixma+" y "Actualiza
+// tu plan" ya eran copy aprobado (brand/copies.md línea 360).
+const SCREEN_TITLE = 'Mi suscripción';
 const BACK_LABEL = 'Volver';
-const NEVER_SUBSCRIBED_TITLE = '[COPY PENDIENTE] Todavía no tienes Prixma+';
-const NEVER_SUBSCRIBED_SUBTITLE =
-  '[COPY PENDIENTE] Likes ilimitados, sin publicidad, y acceso a las funciones premium de Prixma.';
-const ACTIVE_RENEWING_TITLE = '[COPY PENDIENTE] Prixma+ activo';
-const ACTIVE_RENEWING_SUBTITLE = '[COPY PENDIENTE] Se renueva el';
-const ACTIVE_CANCELLED_TITLE = '[COPY PENDIENTE] Cancelaste tu renovación';
-const ACTIVE_CANCELLED_SUBTITLE = '[COPY PENDIENTE] Tienes acceso hasta el';
-const EXPIRED_TITLE = '[COPY PENDIENTE] Tu Prixma+ venció';
-const EXPIRED_SUBTITLE = '[COPY PENDIENTE] Vuelve a suscribirte para recuperar tus beneficios.';
-const MANUAL_PREMIUM_NOTE = '[COPY PENDIENTE] Tienes Prixma+ activo por otro medio (otorgado por soporte).';
-const MANAGE_BUTTON = '[COPY PENDIENTE] Gestionar suscripción';
-const RESTORE_BUTTON = '[COPY PENDIENTE] Restaurar compras';
+const NEVER_SUBSCRIBED_TITLE = 'Todavía no tienes Prixma+';
+const NEVER_SUBSCRIBED_SUBTITLE = 'Likes ilimitados, sin publicidad y acceso a las funciones premium de Prixma.';
+const ACTIVE_RENEWING_TITLE = 'Prixma+ activo';
+const ACTIVE_RENEWING_SUBTITLE = 'Se renueva el';
+const ACTIVE_CANCELLED_TITLE = 'Cancelaste tu renovación';
+const ACTIVE_CANCELLED_SUBTITLE = 'Tienes acceso hasta el';
+const EXPIRED_TITLE = 'Tu Prixma+ venció';
+const EXPIRED_SUBTITLE = 'Vuelve a suscribirte para recuperar tus beneficios.';
+const MANUAL_PREMIUM_NOTE = 'Tienes Prixma+ activo por otro medio (otorgado por soporte).';
+const MANAGE_BUTTON = 'Gestionar suscripción';
+const RESTORE_BUTTON = 'Restaurar compras';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '';
@@ -56,7 +55,7 @@ export function SubscriptionScreen() {
     refresh: refreshStatus,
   } = useSubscriptionStatus();
   const { purchase, isPurchasing, error: purchaseError } = usePurchasePrixmaPlus();
-  const { restore, isRestoring, error: restoreError } = useRestorePurchases();
+  const { restore, isRestoring, error: restoreError, message: restoreMessage } = useRestorePurchases();
 
   // Mismo patrón ya usado en ExploreScreen.tsx/WhoLikedMeScreen.tsx para
   // errores de una sola acción — Alert con el mensaje del hook, vía efecto.
@@ -68,14 +67,21 @@ export function SubscriptionScreen() {
     if (restoreError) Alert.alert('', restoreError);
   }, [restoreError]);
 
+  // Antes "Restaurar compras" no mostraba ningún resultado (ver la nota en
+  // useRestorePurchases.ts) — ahora siempre confirma qué pasó, haya o no
+  // algo que restaurar.
+  useEffect(() => {
+    if (restoreMessage) Alert.alert('', restoreMessage);
+  }, [restoreMessage]);
+
   async function handlePurchase() {
     const success = await purchase();
     if (success) refreshStatus();
   }
 
   async function handleRestore() {
-    const success = await restore();
-    if (success) refreshStatus();
+    const restored = await restore();
+    if (restored) refreshStatus();
   }
 
   function handleManage() {

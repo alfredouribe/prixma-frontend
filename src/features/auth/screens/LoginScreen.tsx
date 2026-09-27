@@ -56,6 +56,15 @@ export function LoginScreen() {
               <Text style={styles.registerLink}>Crear mi perfil</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Temporal — quitar una vez resuelto el problema de conectividad en
+              dispositivo real, ver DebugScreen.tsx */}
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/debug')}
+            style={styles.debugRow}
+          >
+            <Text style={styles.debugLink}>Diagnóstico de conexión</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -109,5 +118,14 @@ const styles = StyleSheet.create({
     ...typography.small,
     color: colors.purple,
     fontFamily: 'PoppinsRounded-SemiBold',
+  },
+  debugRow: {
+    alignItems: 'center',
+    marginTop: spacing.xl,
+  },
+  debugLink: {
+    ...typography.caption,
+    color: text.secondary,
+    textDecorationLine: 'underline',
   },
 });

@@ -1,4 +1,5 @@
 import { render, fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { RegisterForm } from '../RegisterForm';
 
 jest.mock('../../../../lib/api');
@@ -73,5 +74,24 @@ describe('RegisterForm', () => {
         expect.anything(),
       );
     });
+  });
+
+  it('opens the real terms and privacy documents, not just toggles the checkbox', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    await render(<RegisterForm onSubmit={mockOnSubmit} isLoading={false} error={null} />);
+
+    const [termsLink, privacyLink] = await screen.findAllByText('Ver');
+
+    fireEvent.press(termsLink);
+    expect(openURL).toHaveBeenLastCalledWith('https://prixma.site/terminos');
+
+    fireEvent.press(privacyLink);
+    expect(openURL).toHaveBeenLastCalledWith('https://prixma.site/privacidad');
+
+    // Tapping the link must not also toggle acceptance as a side effect
+    expect((await screen.findByTestId('submit-button')).props.accessibilityState.disabled).toBe(true);
+
+    openURL.mockRestore();
   });
 });

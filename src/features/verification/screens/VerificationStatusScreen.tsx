@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useVerificationStatus } from '../hooks/useVerificationStatus';
@@ -8,15 +8,37 @@ import { colors, radius, spacing, surfaces, text, typography } from '../../../li
 interface VerificationStatusScreenProps {
   onRetry?: () => void;
   onGoToExplore?: () => void;
+  // Opcional a propósito — ver la misma nota en VerificationTeaserScreen.tsx:
+  // este componente lo reutiliza tanto el gate duro de Explorar (sin
+  // `onBack`) como la entrada real desde Configuración del perfil (con
+  // `onBack`).
+  onBack?: () => void;
 }
 
-export function VerificationStatusScreen({ onRetry, onGoToExplore }: VerificationStatusScreenProps) {
+function BackButton({ onBack }: { onBack?: () => void }) {
+  const insets = useSafeAreaInsets();
+  if (!onBack) return null;
+  return (
+    <TouchableOpacity
+      onPress={onBack}
+      style={[styles.backButton, { top: insets.top + spacing.md }]}
+      activeOpacity={0.7}
+      accessibilityLabel="Volver"
+      accessibilityRole="button"
+    >
+      <Ionicons name="arrow-back" size={20} color={text.primary} />
+    </TouchableOpacity>
+  );
+}
+
+export function VerificationStatusScreen({ onRetry, onGoToExplore, onBack }: VerificationStatusScreenProps) {
   const router = useRouter();
   const { status, isLoading, error, reload } = useVerificationStatus();
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={onBack} />
         <ActivityIndicator color={colors.purple} size="large" />
       </SafeAreaView>
     );
@@ -25,6 +47,7 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
   if (error || !status) {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={onBack} />
         <Text style={styles.errorText}>{error ?? 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'}</Text>
         <TouchableOpacity style={styles.button} onPress={reload} activeOpacity={0.8}>
           <Text style={styles.buttonLabel}>Reintentar</Text>
@@ -36,6 +59,7 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
   if (status.status === 'approved') {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={onBack} />
         <Ionicons name="checkmark-circle" size={64} color={colors.green} style={styles.icon} />
         <Text style={styles.title}>¡Ya estás verificade!</Text>
         <Text style={styles.subtitle}>
@@ -54,6 +78,7 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
   if (status.status === 'rejected') {
     return (
       <SafeAreaView style={styles.centered}>
+        <BackButton onBack={onBack} />
         <Ionicons name="close-circle" size={64} color={colors.rose} style={styles.icon} />
         <Text style={styles.title}>¡Oh oh! No pudimos verificarte</Text>
         {status.rejection_reason && <Text style={styles.subtitle}>{status.rejection_reason}</Text>}
@@ -66,6 +91,7 @@ export function VerificationStatusScreen({ onRetry, onGoToExplore }: Verificatio
 
   return (
     <SafeAreaView style={styles.centered}>
+      <BackButton onBack={onBack} />
       <Ionicons name="hourglass-outline" size={64} color={colors.orange} style={styles.icon} />
       <Text style={styles.title}>¡Gracias! Estamos revisando tu documento</Text>
       <Text style={styles.subtitle}>Esto puede tardar hasta 24 horas. Te avisamos en cuanto esté listo.</Text>
@@ -88,6 +114,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
+  },
+  backButton: {
+    // `top` real se calcula en runtime con `insets.top` — ver la nota
+    // completa en VerificationTeaserScreen.tsx (bug real 2026-09-27:
+    // position:absolute dentro de un SafeAreaView no respeta su padding
+    // de safe area en React Native, a diferencia de CSS web).
+    position: 'absolute',
+    left: spacing.xl,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: { marginBottom: spacing.sm },
   title: { ...typography.h2, color: text.primary, textAlign: 'center' },

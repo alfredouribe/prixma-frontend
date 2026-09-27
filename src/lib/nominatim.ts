@@ -21,6 +21,22 @@ export interface NominatimPlace {
   lon: string;
 }
 
+interface NominatimAddress {
+  city?: string;
+  town?: string;
+  village?: string;
+  municipality?: string;
+  county?: string;
+  state?: string;
+}
+
+interface RawReverseResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+  address?: NominatimAddress;
+}
+
 function isNominatimPlace(value: unknown): value is NominatimPlace {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Record<string, unknown>;
@@ -29,6 +45,30 @@ function isNominatimPlace(value: unknown): value is NominatimPlace {
     typeof candidate.lat === 'string' &&
     typeof candidate.lon === 'string'
   );
+}
+
+function isRawReverseResult(value: unknown): value is RawReverseResult {
+  return isNominatimPlace(value);
+}
+
+/**
+ * El reverse geocode de Nominatim devuelve la dirección más específica del
+ * punto exacto del GPS (calle, número, colonia...) en `display_name` — a
+ * veces 150+ caracteres, muy por encima del límite de 100 de `city` en
+ * `editProfileSchema.ts`. Como `EditProfileScreen` nunca mostraba
+ * `errors.city`, guardar quedaba roto en silencio: el botón "Guardar"
+ * (`form.handleSubmit`) simplemente no hacía nada, sin ningún mensaje — bug
+ * real reportado por el humano 2026-09-27 (no reproducible en logcat/adb,
+ * es una validación silenciosa, no un crash). Fix real: reconstruir un
+ * label a nivel de ciudad ("Ciudad, Estado"), el mismo nivel de detalle que
+ * ya devuelve `searchPlace()` para una búsqueda por texto — no solo subir
+ * el límite del schema, que seguiría guardando una dirección completa como
+ * si fuera una ciudad.
+ */
+function buildCityLabel(address: NominatimAddress | undefined, fallbackDisplayName: string): string {
+  const cityLevel = address?.city ?? address?.town ?? address?.village ?? address?.municipality ?? address?.county;
+  if (!cityLevel) return fallbackDisplayName.slice(0, 100);
+  return [cityLevel, address?.state].filter(Boolean).join(', ');
 }
 
 /**
@@ -57,11 +97,16 @@ export async function searchPlace(query: string): Promise<NominatimPlace[]> {
  */
 export async function reverseGeocode(lat: number, lon: number): Promise<NominatimPlace | null> {
   try {
-    const url = `${NOMINATIM_BASE_URL}/reverse?lat=${lat}&lon=${lon}&format=json`;
+    const url = `${NOMINATIM_BASE_URL}/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
     const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
     if (!response.ok) return null;
     const data: unknown = await response.json();
-    return isNominatimPlace(data) ? data : null;
+    if (!isRawReverseResult(data)) return null;
+    return {
+      display_name: buildCityLabel(data.address, data.display_name),
+      lat: data.lat,
+      lon: data.lon,
+    };
   } catch {
     return null;
   }

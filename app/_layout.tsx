@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as Sentry from '@sentry/react-native';
 import { useAuthStore } from '../src/stores/authStore';
 import { authService } from '../src/features/auth/services/authService';
 import { usePushNotificationRouter } from '../src/features/notifications/hooks/usePushNotificationRouter';
@@ -11,7 +12,20 @@ import { useConfigurePurchases } from '../src/features/subscriptions/hooks/useCo
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+// Aquí y no en App.tsx — este proyecto usa Expo Router (`index.ts` →
+// `expo-router/entry`), App.tsx nunca se ejecuta. El wizard de Sentry generó
+// un App.tsx genérico con este mismo Sentry.init() sin darse cuenta de que
+// era código muerto (2026-09-26) — borrado, la config real vive aquí.
+Sentry.init({
+  dsn: 'https://81151fdd14e0292e3dce36bf1515b7bd@o4512156526379008.ingest.us.sentry.io/4512156544270336',
+  sendDefaultPii: true,
+  enableLogs: true,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+});
+
+function RootLayout() {
   const [fontsLoaded] = useFonts({
     'PoppinsRounded-Regular':  require('../assets/fonts/Poppins-Regular.ttf'),
     'PoppinsRounded-Medium':   require('../assets/fonts/Poppins-Medium.ttf'),
@@ -80,3 +94,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

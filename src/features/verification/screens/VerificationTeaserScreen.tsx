@@ -1,11 +1,19 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 
 interface VerificationTeaserScreenProps {
   onVerifyNow: () => void;
+  // Opcional a propósito — este mismo componente lo reutiliza
+  // `VerificationGateScreen.tsx` (gate duro del tab Explorar, sin `onBack`:
+  // no hay ningún "perfil" al que volver desde ahí) y
+  // `VerificationSettingsScreen.tsx` (entrada real desde Configuración del
+  // perfil, con `onBack`). Bug real reportado por el humano 2026-09-27: sin
+  // este botón, quien entraba por Configuración quedaba sin ninguna forma
+  // de regresar al perfil.
+  onBack?: () => void;
 }
 
 /**
@@ -15,7 +23,9 @@ interface VerificationTeaserScreenProps {
  * y `brand/copies.md` → "Verificación de identidad" → "Gate de Explorar
  * (usuario no verificado)".
  */
-export function VerificationTeaserScreen({ onVerifyNow }: VerificationTeaserScreenProps) {
+export function VerificationTeaserScreen({ onVerifyNow, onBack }: VerificationTeaserScreenProps) {
+  const insets = useSafeAreaInsets();
+
   function handleWhyWeAskThis() {
     // No hay copy propio definido para este modal en brand/copies.md — se
     // reutiliza literal la nota de privacidad ya aprobada para "Subir
@@ -43,6 +53,17 @@ export function VerificationTeaserScreen({ onVerifyNow }: VerificationTeaserScre
       />
 
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        {onBack && (
+          <TouchableOpacity
+            onPress={onBack}
+            style={[styles.backButton, { top: insets.top + spacing.md }]}
+            activeOpacity={0.7}
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.white} />
+          </TouchableOpacity>
+        )}
         <View style={styles.bottom}>
           <Ionicons name="lock-closed-outline" size={36} color={colors.white} style={styles.lockIcon} />
           <Text style={styles.title}>Recuerda verificar tu identidad para iniciar la aventura</Text>
@@ -71,6 +92,22 @@ const styles = StyleSheet.create({
   photoGradient: { ...StyleSheet.absoluteFillObject, opacity: 0.4 },
   overlayGradient: { ...StyleSheet.absoluteFillObject },
   safeArea: { flex: 1, justifyContent: 'flex-end' },
+  backButton: {
+    // `top` real se calcula en runtime con `insets.top` — un
+    // `SafeAreaView` con `position: 'absolute'` dentro NO respeta su
+    // padding de safe area en React Native (limitación real de Yoga, a
+    // diferencia de position:absolute en CSS web), así que un `top` fijo
+    // quedaba debajo de la barra de estado/notch, imposible de tocar —
+    // bug real reportado por el humano 2026-09-27.
+    position: 'absolute',
+    left: spacing.xl,
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   bottom: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, alignItems: 'center' },
   lockIcon: { marginBottom: spacing.lg },
   title: { ...typography.h2, color: text.primary, textAlign: 'center', marginBottom: spacing.sm },

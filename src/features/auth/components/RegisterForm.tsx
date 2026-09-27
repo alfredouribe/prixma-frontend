@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Linking } from 'react-native';
 import { useForm, Controller, UseFormSetError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterFormData } from '../schemas/registerSchema';
@@ -119,6 +119,8 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
         render={({ field }) => (
           <TermsCheckbox
             label="Acepto los Términos de uso de Prixma"
+            linkText="Ver"
+            onLinkPress={() => Linking.openURL('https://prixma.site/terminos')}
             value={field.value}
             onChange={field.onChange}
             error={errors.terms_accepted?.message}
@@ -133,6 +135,8 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
         render={({ field }) => (
           <TermsCheckbox
             label="Acepto la Política de privacidad y el manejo de mis datos"
+            linkText="Ver"
+            onLinkPress={() => Linking.openURL('https://prixma.site/privacidad')}
             value={field.value}
             onChange={field.onChange}
             error={errors.privacy_accepted?.message}

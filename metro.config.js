@@ -1,7 +1,9 @@
-const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
+const {
+  getSentryExpoConfig
+} = require("@sentry/react-native/metro");
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // Metro 0.83 (Expo SDK 54) activa `unstable_enablePackageExports` por
 // default. Eso rompe la resolución de paquetes CJS legacy que solo
