@@ -59,6 +59,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/prixma_resources/png/isotypeWhite.png",
           "color": "#9b5dff"
         }
       ],
