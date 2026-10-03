@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { getEcho } from '../../../lib/echo';
 import { chatService } from '../services/chatService';
 import { extractApiError } from '../../../lib/extractApiError';
 import { useActiveConversationStore } from '../../../stores/activeConversationStore';
-import type { Conversation, Message, MessageSentPayload } from '../types/chat.types';
+import type { Conversation, Message, MessageSentPayload, MessagesReadPayload } from '../types/chat.types';
 
 /**
  * Carga el historial de una conversación (REST) y se conecta al canal
@@ -85,9 +86,50 @@ export function useConversation(conversationId: string) {
       });
     });
 
+    // Bug real 2026-10-02: con ambos participantes dentro del mismo chat, el
+    // check "✓✓ visto" de mis propios mensajes solo se actualizaba al salir
+    // y volver a entrar a la conversación — `markAsRead()` del otro lado
+    // nunca avisaba nada en vivo. `MessagesRead` llega a este mismo canal.
+    channel.listen('MessagesRead', (payload: MessagesReadPayload) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.read_at ? m : { ...m, read_at: payload.read_at })),
+      );
+    });
+
     return () => {
       echo.leave(channelName);
     };
+  }, [conversationId]);
+
+  // Bug real 2026-10-02: el socket de Reverb se desconecta cuando el SO
+  // suspende la app en segundo plano, y no hay "catch-up" al reconectar —
+  // un mensaje enviado mientras la pantalla estaba abierta pero la app en
+  // background se perdía hasta salir y volver a entrar a la conversación
+  // (que sí dispara el fetch REST del efecto 1 de nuevo). Mismo patrón que
+  // `useConversations.ts` para la bandeja.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState !== 'active') return;
+
+      chatService
+        .getMessages(conversationId, 1)
+        .then((messagesPage) => {
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const missing = [...messagesPage.messages].reverse().filter((m) => !existingIds.has(m.id));
+            return missing.length > 0 ? [...prev, ...missing] : prev;
+          });
+        })
+        .catch(() => {
+          // Falla silenciosa: el hilo ya cargado se mantiene tal cual.
+        });
+
+      chatService.markAsRead(conversationId).catch(() => {
+        // No bloquea nada si falla el marcado de leídos.
+      });
+    });
+
+    return () => subscription.remove();
   }, [conversationId]);
 
   const sendMessage = useCallback(

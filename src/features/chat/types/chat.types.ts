@@ -68,3 +68,11 @@ export interface MessageSentPayload {
   sender_photo: string | null;
   preview: string;
 }
+
+// Payload del evento Reverb `MessagesRead` — se transmite al canal
+// `conversation.{id}` cuando el otro participante marca mensajes como
+// leídos. Ver app/Events/MessagesRead.php.
+export interface MessagesReadPayload {
+  conversation_id: string;
+  read_at: string;
+}

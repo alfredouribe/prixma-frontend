@@ -45,11 +45,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash_loading_screen.png",
-          "resizeMode": "cover",
+          "image": "./assets/prixma_resources/png/isotypeWhite.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
           "backgroundColor": "#0d0d14",
           "dark": {
-            "image": "./assets/images/splash_loading_screen.png",
+            "image": "./assets/prixma_resources/png/isotypeWhite.png",
             "backgroundColor": "#0d0d14"
           }
         }

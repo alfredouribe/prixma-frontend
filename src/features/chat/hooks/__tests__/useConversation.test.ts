@@ -1,9 +1,20 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { AppState } from 'react-native';
 import { useConversation } from '../useConversation';
 import { chatService } from '../../services/chatService';
 import { getEcho } from '../../../../lib/echo';
 import { useActiveConversationStore } from '../../../../stores/activeConversationStore';
-import type { Conversation, MessageSentPayload } from '../../types/chat.types';
+import type { Conversation, MessageSentPayload, MessagesReadPayload } from '../../types/chat.types';
+
+// Mismo patrón que useConversations.test.ts: captura el listener real de
+// AppState registrado por el hook para invocarlo manualmente.
+function emitAppStateChange(nextState: 'active' | 'background' | 'inactive') {
+  const addEventListenerMock = AppState.addEventListener as jest.Mock;
+  const handler = addEventListenerMock.mock.calls[addEventListenerMock.mock.calls.length - 1][1];
+  act(() => {
+    handler(nextState);
+  });
+}
 
 jest.mock('../../services/chatService');
 // Factory explícito (no automock): automock forzaría a Jest a cargar el
@@ -155,6 +166,72 @@ describe('useConversation', () => {
     });
 
     expect(result.current.messages).toHaveLength(1);
+  });
+
+  it('bug real 2026-10-02: marca los mensajes como "✓✓ visto" en vivo cuando llega MessagesRead', async () => {
+    (chatService.getMessages as jest.Mock).mockResolvedValue({
+      messages: [
+        { id: 'msg-1', sender_id: 'user-1', content: 'Mío', read_at: null, created_at: '2026-10-02T10:00:00Z' },
+      ],
+      currentPage: 1,
+      lastPage: 1,
+      total: 1,
+    });
+
+    const { result } = renderHook(() => useConversation('conv-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.messages[0].read_at).toBeNull();
+
+    const handler = listen.mock.calls.find(([event]) => event === 'MessagesRead')?.[1] as (
+      payload: MessagesReadPayload,
+    ) => void;
+
+    act(() => {
+      handler({ conversation_id: 'conv-1', read_at: '2026-10-02T10:05:00Z' });
+    });
+
+    expect(result.current.messages[0].read_at).toBe('2026-10-02T10:05:00Z');
+  });
+
+  it('bug real 2026-10-02: al volver la app a primer plano, recupera mensajes perdidos mientras el socket estaba desconectado', async () => {
+    (chatService.getMessages as jest.Mock)
+      .mockResolvedValueOnce({
+        messages: [
+          { id: 'msg-1', sender_id: 'user-2', content: 'Antes de minimizar', read_at: null, created_at: '2026-10-02T10:00:00Z' },
+        ],
+        currentPage: 1,
+        lastPage: 1,
+        total: 1,
+      })
+      .mockResolvedValueOnce({
+        messages: [
+          { id: 'msg-2', sender_id: 'user-2', content: 'Mientras estaba en segundo plano', read_at: null, created_at: '2026-10-02T10:01:00Z' },
+          { id: 'msg-1', sender_id: 'user-2', content: 'Antes de minimizar', read_at: null, created_at: '2026-10-02T10:00:00Z' },
+        ],
+        currentPage: 1,
+        lastPage: 1,
+        total: 2,
+      });
+
+    const { result } = renderHook(() => useConversation('conv-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.messages).toHaveLength(1);
+    expect(chatService.markAsRead).toHaveBeenCalledTimes(1);
+
+    emitAppStateChange('active');
+
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+    expect(result.current.messages.map((m) => m.id)).toEqual(['msg-1', 'msg-2']);
+    expect(chatService.markAsRead).toHaveBeenCalledTimes(2);
+  });
+
+  it('no vuelve a pedir mensajes cuando la app pasa a segundo plano', async () => {
+    const { result } = renderHook(() => useConversation('conv-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    emitAppStateChange('background');
+
+    expect(chatService.getMessages).toHaveBeenCalledTimes(1);
   });
 
   it('se desconecta del canal al desmontar', async () => {

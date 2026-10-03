@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { chatService } from '../services/chatService';
 import { extractApiError } from '../../../lib/extractApiError';
@@ -35,6 +36,25 @@ export function useConversations() {
       load();
     }, [load]),
   );
+
+  // Bug real reportado 2026-10-02: con la pantalla de Chats ya en foco
+  // (abierta antes de minimizar la app), `useFocusEffect` no vuelve a
+  // dispararse al reabrirla — solo rastrea foco de navegación entre
+  // pantallas, no el ciclo de vida de la app a nivel SO. Sin esto, un
+  // mensaje nuevo llegado mientras la app estaba en segundo plano no
+  // aparecía hasta cambiar de pestaña y volver (eso sí dispara un foco de
+  // navegación real). `useConversations` nunca tuvo tampoco una suscripción
+  // en vivo (a diferencia de `useConversation`, dentro de un chat
+  // individual) — la bandeja siempre dependió 100% de este refetch.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        load();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [load]);
 
   const refresh = useCallback(() => load(true), [load]);
 
