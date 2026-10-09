@@ -19,6 +19,8 @@ export function useStepIdentity() {
       custom_gender_identity: '',
       orientation_ids: [],
       custom_orientation: '',
+      interested_in_all_genders: false,
+      interested_gender_identity_ids: [],
     },
   });
 

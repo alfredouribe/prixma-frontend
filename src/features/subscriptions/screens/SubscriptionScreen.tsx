@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Linking, ScrollView, StyleSheet, Text, Toucha
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import { usePremiumSettings } from '../../premium/hooks/usePremiumSettings';
+import { PrixmaPlusBenefitsList } from '../../premium/components/PrixmaPlusBenefitsList';
 import { usePurchasePrixmaPlus } from '../hooks/usePurchasePrixmaPlus';
 import { useRestorePurchases } from '../hooks/useRestorePurchases';
 import { useSubscriptionStatus } from '../hooks/useSubscriptionStatus';
@@ -163,6 +164,7 @@ export function SubscriptionScreen() {
                 <Text style={styles.cardSubtitle}>
                   {status === 'expired' ? EXPIRED_SUBTITLE : NEVER_SUBSCRIBED_SUBTITLE}
                 </Text>
+                <PrixmaPlusBenefitsList />
                 <TouchableOpacity
                   style={styles.primaryBtn}
                   onPress={handlePurchase}

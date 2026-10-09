@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radius, spacing, surfaces, text, typography } from '../../../lib/theme';
 import { usePurchasePrixmaPlus } from '../../subscriptions/hooks/usePurchasePrixmaPlus';
+import { PrixmaPlusBenefitsList } from './PrixmaPlusBenefitsList';
 
 // Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
 // "Borradores pendientes de revisión" para el detalle y la condición de
@@ -56,6 +57,8 @@ export function LikeLimitPaywall({ visible, onClose, onUpgrade }: LikeLimitPaywa
           <Text style={styles.brand}>Prixma+</Text>
           <Text style={styles.title}>{TITLE}</Text>
           <Text style={styles.subtitle}>{SUBTITLE}</Text>
+
+          <PrixmaPlusBenefitsList />
 
           <TouchableOpacity
             style={styles.upgradeBtn}

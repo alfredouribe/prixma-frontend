@@ -22,6 +22,13 @@ import { colors, surfaces, text, typography, radius, spacing } from '../../../li
 import type { MyProfile } from '../types/profile.types';
 import type { CatalogItem, Interest } from '../../onboarding/types/onboarding.types';
 
+// Sentinel, no es un id de catálogo real (nunca se manda al backend como
+// parte de `interested_gender_identity_ids`) — identifica el chip especial
+// "Todes / sin preferencia" dentro del mismo ChipSelector que ya usan
+// identidad de género/orientación/pronombres (reutilizado tal cual, sin
+// modificarlo). Mismo patrón que IdentityScreen.tsx (Onboarding, Paso 1).
+const ALL_GENDERS_ID = '__interested_all_genders__';
+
 interface EditProfileScreenProps {
   profile: MyProfile;
 }
@@ -79,6 +86,8 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
   const customGender = watch('custom_gender_identity') ?? '';
   const customOrientation = watch('custom_orientation') ?? '';
   const customPronouns = watch('custom_pronouns') ?? '';
+  const interestedInAllGenders = watch('interested_in_all_genders') ?? false;
+  const interestedGenderIds = watch('interested_gender_identity_ids') ?? [];
 
   const [customInterestTags, setCustomInterestTags] = useState<string[]>(
     () => (profile.custom_interests ?? '').split(',').map((s) => s.trim()).filter(Boolean),
@@ -100,6 +109,8 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
     register('pronoun_ids');
     register('interest_ids');
     register('intention');
+    register('interested_in_all_genders');
+    register('interested_gender_identity_ids');
   }, [register]);
 
   useEffect(() => {
@@ -119,6 +130,28 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
     const current = (form.getValues(field) ?? []) as string[];
     const next = current.includes(id) ? current.filter((v) => v !== id) : [...current, id];
     setValue(field, next, { shouldValidate: true });
+  }
+
+  // "¿A quién te gustaría conocer?" — "Todes / sin preferencia" es
+  // mutuamente excluyente con cualquier identidad específica (ver
+  // features/matching/specs/spec.md → "Compatibilidad de género"), mismo
+  // comportamiento que IdentityScreen.tsx (Onboarding, Paso 1).
+  function toggleInterestedGender(id: string) {
+    if (id === ALL_GENDERS_ID) {
+      const next = !interestedInAllGenders;
+      setValue('interested_in_all_genders', next, { shouldValidate: true });
+      if (next) {
+        setValue('interested_gender_identity_ids', [], { shouldValidate: true });
+      }
+      return;
+    }
+    if (interestedInAllGenders) {
+      setValue('interested_in_all_genders', false, { shouldValidate: true });
+    }
+    const next = interestedGenderIds.includes(id)
+      ? interestedGenderIds.filter((v) => v !== id)
+      : [...interestedGenderIds, id];
+    setValue('interested_gender_identity_ids', next, { shouldValidate: true });
   }
 
   return (
@@ -292,6 +325,19 @@ export function EditProfileScreen({ profile }: EditProfileScreenProps) {
                 placeholder="Escribe tu orientación con tus propias palabras..."
                 value={customOrientation}
                 onChangeText={(v) => setValue('custom_orientation', v || null, { shouldValidate: true })}
+              />
+            </Field>
+
+            {/* Ver brand/copies.md → "Onboarding — Paso 1: Identidad" → "¿A quién te gustaría conocer?" */}
+            <Field label="¿A quién te gustaría conocer?">
+              <ChipSelector
+                items={[
+                  { id: ALL_GENDERS_ID, slug: 'all', label: 'Todes / sin preferencia' },
+                  ...genderCatalog,
+                ]}
+                selected={interestedInAllGenders ? [ALL_GENDERS_ID] : interestedGenderIds}
+                onToggle={toggleInterestedGender}
+                testIDPrefix="edit-interested-gender"
               />
             </Field>
 

@@ -7,6 +7,13 @@ interface ChipSelectorProps {
   selected: string[];
   onToggle: (id: string) => void;
   color?: string;
+  // Prefijo opcional para generar un testID determinístico por chip
+  // (`${testIDPrefix}-${item.id}`), usado por selectores donde más de una
+  // instancia de ChipSelector en la misma pantalla reutiliza el mismo
+  // catálogo (ej. identidad de género y "a quién te gustaría conocer"
+  // comparten `gender_identities`, el mismo label puede repetirse en
+  // pantalla). Sin este prop, el comportamiento es idéntico al de antes.
+  testIDPrefix?: string;
 }
 
 export function ChipSelector({
@@ -14,6 +21,7 @@ export function ChipSelector({
   selected,
   onToggle,
   color = colors.purple,
+  testIDPrefix,
 }: ChipSelectorProps) {
   return (
     <View style={styles.container}>
@@ -22,6 +30,7 @@ export function ChipSelector({
         return (
           <TouchableOpacity
             key={item.id}
+            testID={testIDPrefix ? `${testIDPrefix}-${item.id}` : undefined}
             onPress={() => onToggle(item.id)}
             activeOpacity={0.7}
             accessibilityRole="checkbox"

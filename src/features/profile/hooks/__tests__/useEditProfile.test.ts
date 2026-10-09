@@ -28,6 +28,8 @@ const mockProfile: MyProfile = {
   orientations: [],
   pronouns: [],
   interests: [],
+  interested_in_all_genders: false,
+  interested_genders: [],
   photos: [
     { id: 'photo-1', url: 'https://s3.example.com/a.jpg', position: 1 },
     { id: 'photo-2', url: 'https://s3.example.com/b.jpg', position: 2 },
@@ -60,5 +62,29 @@ describe('useEditProfile', () => {
 
     expect(result.current.photos[0].id).toBe('photo-2');
     expect(result.current.photos[1].id).toBe('photo-1');
+  });
+
+  it('prefija "a quién te gustaría conocer" desde el GET cuando el perfil ya tiene identidades específicas guardadas', () => {
+    const profile: MyProfile = {
+      ...mockProfile,
+      interested_in_all_genders: false,
+      interested_genders: [{ id: 'g2', slug: 'trans_woman', label: 'Mujer trans' }],
+    };
+    const { result } = renderHook(() => useEditProfile(profile));
+
+    expect(result.current.form.getValues('interested_in_all_genders')).toBe(false);
+    expect(result.current.form.getValues('interested_gender_identity_ids')).toEqual(['g2']);
+  });
+
+  it('prefija "Todes / sin preferencia" desde el GET cuando el perfil lo tiene marcado', () => {
+    const profile: MyProfile = {
+      ...mockProfile,
+      interested_in_all_genders: true,
+      interested_genders: [],
+    };
+    const { result } = renderHook(() => useEditProfile(profile));
+
+    expect(result.current.form.getValues('interested_in_all_genders')).toBe(true);
+    expect(result.current.form.getValues('interested_gender_identity_ids')).toEqual([]);
   });
 });

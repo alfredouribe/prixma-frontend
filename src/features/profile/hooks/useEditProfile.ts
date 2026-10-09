@@ -42,6 +42,8 @@ export function useEditProfile(initial: MyProfile) {
       custom_orientation: initial.custom_orientation ?? '',
       custom_pronouns: initial.custom_pronouns ?? '',
       custom_interests: initial.custom_interests ?? '',
+      interested_in_all_genders: initial.interested_in_all_genders ?? false,
+      interested_gender_identity_ids: initial.interested_genders?.map((g) => g.id) ?? [],
     },
   });
 

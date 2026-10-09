@@ -32,6 +32,15 @@ export interface Profile {
   orientations?: CatalogItem[];
   pronouns?: CatalogItem[];
   interests?: Interest[];
+  // "¿A quién te gustaría conocer?" — ver features/matching/specs/spec.md →
+  // "Compatibilidad de género". `interested_in_all_genders` siempre viene
+  // presente (columna escalar, no relación); `interested_genders` sigue el
+  // mismo patrón `whenLoaded` que `gender_identities`/`orientations`, así
+  // que puede venir ausente (no `[]`) si el endpoint no cargó la relación —
+  // ej. `GET /onboarding/status` hoy no la eager-carga, gap de backend
+  // fuera de este alcance.
+  interested_in_all_genders?: boolean;
+  interested_genders?: CatalogItem[];
 }
 
 export interface OnboardingStatus {

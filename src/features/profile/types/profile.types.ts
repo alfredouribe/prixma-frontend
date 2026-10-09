@@ -36,6 +36,13 @@ export interface MyProfile {
   orientations: CatalogItem[];
   pronouns: CatalogItem[];
   interests: Interest[];
+  // "¿A quién te gustaría conocer?" — ver features/matching/specs/spec.md →
+  // "Compatibilidad de género". `GET /profiles/me` siempre eager-carga
+  // `interestedGenders`, así que ambos campos vienen siempre presentes
+  // aquí (a diferencia de `onboarding.types.ts#Profile`, que los tipa
+  // opcionales porque `GET /onboarding/status` no carga esa relación).
+  interested_in_all_genders: boolean;
+  interested_genders: CatalogItem[];
   photos: ProfilePhoto[];
   statistics: ProfileStats;
 }

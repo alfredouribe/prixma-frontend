@@ -15,6 +15,13 @@ export const editProfileSchema = z.object({
   custom_orientation: z.string().max(100).nullable().optional(),
   custom_pronouns: z.string().max(100).nullable().optional(),
   custom_interests: z.string().max(200).nullable().optional(),
+  // "¿A quién te gustaría conocer?" — ver features/matching/specs/spec.md →
+  // "Compatibilidad de género". Igual que el resto de catálogos de este
+  // schema (gender_identity_ids, orientation_ids, etc.), sin `.refine()`
+  // cruzado — el backend (`UpdateProfileRequest`) tampoco lo exige en este
+  // endpoint (`sometimes`), a diferencia del paso de Onboarding.
+  interested_in_all_genders: z.boolean().optional(),
+  interested_gender_identity_ids: z.array(z.string().uuid()).optional(),
 });
 
 export type EditProfileFormData = z.infer<typeof editProfileSchema>;

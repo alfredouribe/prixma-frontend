@@ -8,6 +8,7 @@ import { MatchOverlay } from '../../matching/components/MatchOverlay';
 import { useMyProfile } from '../../profile/hooks/useMyProfile';
 import { usePurchasePrixmaPlus } from '../../subscriptions/hooks/usePurchasePrixmaPlus';
 import { LikerCard } from '../components/LikerCard';
+import { PrixmaPlusBenefitsList } from '../components/PrixmaPlusBenefitsList';
 import { useLikers } from '../hooks/useLikers';
 
 // Copy borrador (2026-08-18, Mafer de vacaciones — ver brand/copies.md →
@@ -106,6 +107,7 @@ export function WhoLikedMeScreen() {
             <Text style={styles.paywallBrand}>Prixma+</Text>
             <Text style={styles.paywallTitle}>{PAYWALL_TITLE}</Text>
             <Text style={styles.paywallSubtitle}>{PAYWALL_SUBTITLE}</Text>
+            <PrixmaPlusBenefitsList />
             <TouchableOpacity
               style={styles.upgradeBtn}
               activeOpacity={0.85}

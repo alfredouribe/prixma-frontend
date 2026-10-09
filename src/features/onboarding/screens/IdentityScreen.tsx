@@ -18,6 +18,12 @@ import { DescribeInput } from '../components/DescribeInput';
 import { colors, surfaces, text, typography, radius, spacing } from '../../../lib/theme';
 import type { CatalogItem } from '../types/onboarding.types';
 
+// Sentinel, no es un id de catálogo real (nunca se manda al backend como
+// parte de `interested_gender_identity_ids`) — identifica el chip especial
+// "Todes / sin preferencia" dentro del mismo ChipSelector que ya usan
+// identidad de género/orientación (reutilizado tal cual, sin modificarlo).
+const ALL_GENDERS_ID = '__interested_all_genders__';
+
 export function IdentityScreen() {
   const { form, handleSubmit, isLoading, error } = useStepIdentity();
 
@@ -31,10 +37,14 @@ export function IdentityScreen() {
   const orientationIds = watch('orientation_ids') ?? [];
   const customGender = watch('custom_gender_identity') ?? '';
   const customOrientation = watch('custom_orientation') ?? '';
+  const interestedInAllGenders = watch('interested_in_all_genders') ?? false;
+  const interestedGenderIds = watch('interested_gender_identity_ids') ?? [];
 
   useEffect(() => {
     register('gender_identity_ids');
     register('orientation_ids');
+    register('interested_gender_identity_ids');
+    register('interested_in_all_genders');
   }, [register]);
 
   useEffect(() => {
@@ -51,6 +61,9 @@ export function IdentityScreen() {
           orientation_ids: status.profile.orientations?.map((o) => o.id) ?? [],
           custom_gender_identity: status.profile.custom_gender_identity ?? '',
           custom_orientation: status.profile.custom_orientation ?? '',
+          interested_in_all_genders: status.profile.interested_in_all_genders ?? false,
+          interested_gender_identity_ids:
+            status.profile.interested_genders?.map((g) => g.id) ?? [],
         });
       }
     }).catch(() => {}).finally(() => setIsLoadingCatalogs(false));
@@ -70,10 +83,34 @@ export function IdentityScreen() {
     setValue('orientation_ids', next, { shouldValidate: true });
   }
 
+  // "¿A quién te gustaría conocer?" — "Todes / sin preferencia" es
+  // mutuamente excluyente con cualquier identidad específica (ver
+  // features/matching/specs/spec.md → "Compatibilidad de género"):
+  // marcar "Todes" limpia el catálogo seleccionado; marcar cualquier
+  // identidad específica desmarca "Todes" automáticamente.
+  function toggleInterestedGender(id: string) {
+    if (id === ALL_GENDERS_ID) {
+      const next = !interestedInAllGenders;
+      setValue('interested_in_all_genders', next, { shouldValidate: true });
+      if (next) {
+        setValue('interested_gender_identity_ids', [], { shouldValidate: true });
+      }
+      return;
+    }
+    if (interestedInAllGenders) {
+      setValue('interested_in_all_genders', false, { shouldValidate: true });
+    }
+    const next = interestedGenderIds.includes(id)
+      ? interestedGenderIds.filter((v) => v !== id)
+      : [...interestedGenderIds, id];
+    setValue('interested_gender_identity_ids', next, { shouldValidate: true });
+  }
+
   const canContinue =
     displayName.trim().length > 0 &&
     (genderIds.length > 0 || customGender.trim().length > 0) &&
-    (orientationIds.length > 0 || customOrientation.trim().length > 0);
+    (orientationIds.length > 0 || customOrientation.trim().length > 0) &&
+    (interestedInAllGenders || interestedGenderIds.length > 0);
 
   if (isLoadingCatalogs) {
     return (
@@ -153,11 +190,29 @@ export function IdentityScreen() {
           )}
         </View>
 
+        <View style={styles.section}>
+          {/* Ver brand/copies.md → "Onboarding — Paso 1: Identidad" → "¿A quién te gustaría conocer?" */}
+          <Text style={styles.sectionLabel}>¿A quién te gustaría conocer?</Text>
+          <ChipSelector
+            items={[
+              { id: ALL_GENDERS_ID, slug: 'all', label: 'Todes / sin preferencia' },
+              ...genderCatalog,
+            ]}
+            selected={interestedInAllGenders ? [ALL_GENDERS_ID] : interestedGenderIds}
+            onToggle={toggleInterestedGender}
+            testIDPrefix="interested-gender"
+          />
+          {errors.interested_gender_identity_ids && (
+            <Text style={styles.errorText}>{errors.interested_gender_identity_ids.message}</Text>
+          )}
+        </View>
+
         {error && <Text style={styles.errorText}>{error}</Text>}
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity
+          testID="identity-submit-button"
           style={[styles.button, !canContinue && styles.buttonDisabled]}
           onPress={handleSubmit}
           disabled={!canContinue || isLoading}

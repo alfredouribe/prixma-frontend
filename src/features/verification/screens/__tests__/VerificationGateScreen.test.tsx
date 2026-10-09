@@ -54,6 +54,8 @@ function buildProfile(verification_status: ProfileVerificationStatus): MyProfile
     orientations: [],
     pronouns: [],
     interests: [],
+    interested_in_all_genders: false,
+    interested_genders: [],
     photos: [],
     statistics: { likes_received: 0, matches_count: 0, events_count: 0 },
   };
