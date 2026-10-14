@@ -43,4 +43,19 @@ describe('ProfileSettingsMenu', () => {
 
     expect(router.push).toHaveBeenCalledWith('/profile/subscription');
   });
+
+  it('muestra la entrada de Reportar un problema con su descripción', () => {
+    render(<ProfileSettingsMenu verificationStatus="verified" />);
+
+    expect(screen.getByText('Reportar un problema')).toBeTruthy();
+    expect(screen.getByText('Cuéntanos qué no funciona o compártenos tu idea')).toBeTruthy();
+  });
+
+  it('navega a /profile/feedback al tocar Reportar un problema', () => {
+    render(<ProfileSettingsMenu verificationStatus="verified" />);
+
+    fireEvent.press(screen.getByText('Reportar un problema'));
+
+    expect(router.push).toHaveBeenCalledWith('/profile/feedback');
+  });
 });

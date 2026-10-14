@@ -57,6 +57,14 @@ const MENU_ITEMS = [
     iconColor: colors.yellow,
     iconBg: `${colors.yellow}18`,
   },
+  {
+    key: 'feedback',
+    label: 'Reportar un problema',
+    description: 'Cuéntanos qué no funciona o compártenos tu idea',
+    icon: 'chatbox-ellipses-outline' as IoniconName,
+    iconColor: colors.blue,
+    iconBg: `${colors.blue}18`,
+  },
 ] as const;
 
 const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> = {
@@ -66,6 +74,7 @@ const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> =
   blocked: '/profile/blocked',
   geoBlocks: '/profile/geo-blocks',
   premium: '/profile/subscription',
+  feedback: '/profile/feedback',
 };
 
 interface ProfileSettingsMenuProps {
