@@ -77,6 +77,11 @@ const MENU_ROUTES: Partial<Record<(typeof MENU_ITEMS)[number]['key'], string>> =
   feedback: '/profile/feedback',
 };
 
+// Copy aprobado — ver brand/copies.md → "Mi perfil" → "Eliminar cuenta".
+const DELETE_ACCOUNT_LABEL = 'Eliminar cuenta';
+const DELETE_ACCOUNT_DESCRIPTION = 'Elimina tu cuenta y tus datos de forma permanente';
+const DELETE_ACCOUNT_ROUTE = '/profile/delete-account';
+
 interface ProfileSettingsMenuProps {
   verificationStatus: ProfileVerificationStatus;
 }
@@ -117,18 +122,35 @@ export function ProfileSettingsMenu({ verificationStatus }: ProfileSettingsMenuP
         );
       })}
 
-      <TouchableOpacity
-        style={styles.logoutRow}
-        onPress={handleLogout}
-        disabled={isLoggingOut}
-        activeOpacity={0.7}
-      >
-        <View style={[styles.iconSquare, { backgroundColor: surfaces.elevated }]}>
-          <Ionicons name="log-out-outline" size={18} color={colors.rose} />
-        </View>
-        <Text style={styles.logoutText}>Cerrar sesión</Text>
-        <Text style={styles.chevron}>›</Text>
-      </TouchableOpacity>
+      <View style={styles.destructiveSection}>
+        <TouchableOpacity
+          style={[styles.logoutRow, styles.rowBorder]}
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.iconSquare, { backgroundColor: surfaces.elevated }]}>
+            <Ionicons name="log-out-outline" size={18} color={colors.rose} />
+          </View>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
+          <Text style={styles.chevron}>›</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.logoutRow}
+          onPress={() => router.push(DELETE_ACCOUNT_ROUTE as never)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.iconSquare, { backgroundColor: surfaces.elevated }]}>
+            <Ionicons name="trash-outline" size={18} color={colors.rose} />
+          </View>
+          <View style={styles.rowContent}>
+            <Text style={styles.logoutText}>{DELETE_ACCOUNT_LABEL}</Text>
+            <Text style={styles.rowDescription}>{DELETE_ACCOUNT_DESCRIPTION}</Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -174,14 +196,16 @@ const styles = StyleSheet.create({
     color: text.tertiary,
     fontFamily: 'PoppinsRounded-Regular',
   },
+  destructiveSection: {
+    borderTopWidth: 0.5,
+    borderTopColor: surfaces.card,
+  },
   logoutRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
     gap: spacing.md,
-    borderTopWidth: 0.5,
-    borderTopColor: surfaces.card,
   },
   logoutText: {
     ...typography.body,

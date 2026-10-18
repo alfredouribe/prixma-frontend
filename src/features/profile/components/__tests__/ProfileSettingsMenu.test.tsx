@@ -58,4 +58,19 @@ describe('ProfileSettingsMenu', () => {
 
     expect(router.push).toHaveBeenCalledWith('/profile/feedback');
   });
+
+  it('muestra la entrada de Eliminar cuenta con su descripción, separada del resto', () => {
+    render(<ProfileSettingsMenu verificationStatus="verified" />);
+
+    expect(screen.getByText('Eliminar cuenta')).toBeTruthy();
+    expect(screen.getByText('Elimina tu cuenta y tus datos de forma permanente')).toBeTruthy();
+  });
+
+  it('navega a /profile/delete-account al tocar Eliminar cuenta', () => {
+    render(<ProfileSettingsMenu verificationStatus="verified" />);
+
+    fireEvent.press(screen.getByText('Eliminar cuenta'));
+
+    expect(router.push).toHaveBeenCalledWith('/profile/delete-account');
+  });
 });
