@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import * as Sentry from '@sentry/react-native';
 import { useRouter } from 'expo-router';
 import { profileService } from '../services/profileService';
 import { editProfileSchema, type EditProfileFormData } from '../schemas/editProfileSchema';
@@ -85,7 +86,7 @@ export function useEditProfile(initial: MyProfile) {
       quality: 0.85,
     });
     if (result.canceled) return;
-    await processPhotoAsset(result.assets[0].uri);
+    await processPhotoAsset(result.assets[0].uri, 'camera');
   }
 
   async function pickPhotoFromLibrary() {
@@ -96,10 +97,10 @@ export function useEditProfile(initial: MyProfile) {
       quality: 0.85,
     });
     if (result.canceled) return;
-    await processPhotoAsset(result.assets[0].uri);
+    await processPhotoAsset(result.assets[0].uri, 'library');
   }
 
-  async function processPhotoAsset(uri: string) {
+  async function processPhotoAsset(uri: string, source: 'camera' | 'library') {
     setIsUploadingPhoto(true);
     setPhotoError(null);
     try {
@@ -111,7 +112,16 @@ export function useEditProfile(initial: MyProfile) {
       const photo = await profileService.uploadPhoto(compressed.uri);
       setPhotos((prev) => [...prev, photo]);
     } catch (err) {
-      setPhotoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+      Sentry.captureException(err, {
+        tags: { feature: 'profile_photo_upload', pick_source: source },
+      });
+      if (source === 'camera') {
+        setPhotoError(
+          'No pudimos subir tu foto desde la cámara. Intenta de nuevo o selecciona una desde tu galería.',
+        );
+      } else {
+        setPhotoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+      }
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -172,6 +182,15 @@ export function useEditProfile(initial: MyProfile) {
       setVideoUrl(asset.uri);
       setVideoState('done');
     } catch (err) {
+      Sentry.captureException(err, {
+        tags: { feature: 'profile_video_upload' },
+        extra: {
+          mimeType: asset.mimeType,
+          fileSize: asset.fileSize,
+          width: asset.width,
+          height: asset.height,
+        },
+      });
       setVideoState('error');
       setVideoError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
     }

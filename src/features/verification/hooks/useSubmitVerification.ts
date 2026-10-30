@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import * as Sentry from '@sentry/react-native';
 import { verificationService } from '../services/verificationService';
 import { extractApiError } from '../../../lib/extractApiError';
 
 type SubmitState = 'idle' | 'uploading' | 'submitting' | 'done' | 'error';
+type PickSource = 'camera' | 'library';
 
 interface UseSubmitVerificationProps {
   onSubmitted?: () => void;
@@ -13,6 +15,7 @@ interface UseSubmitVerificationProps {
 
 export function useSubmitVerification({ onSubmitted }: UseSubmitVerificationProps = {}) {
   const [documentUri, setDocumentUri] = useState<string | null>(null);
+  const [pickSource, setPickSource] = useState<PickSource | null>(null);
   const [state, setState] = useState<SubmitState>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +32,7 @@ export function useSubmitVerification({ onSubmitted }: UseSubmitVerificationProp
     });
     if (result.canceled || !result.assets[0]) return;
     setDocumentUri(result.assets[0].uri);
+    setPickSource('camera');
     setError(null);
   }
 
@@ -41,6 +45,7 @@ export function useSubmitVerification({ onSubmitted }: UseSubmitVerificationProp
     });
     if (result.canceled || !result.assets[0]) return;
     setDocumentUri(result.assets[0].uri);
+    setPickSource('library');
     setError(null);
   }
 
@@ -74,8 +79,17 @@ export function useSubmitVerification({ onSubmitted }: UseSubmitVerificationProp
       setState('done');
       onSubmitted?.();
     } catch (err) {
+      Sentry.captureException(err, {
+        tags: { feature: 'verification_submit', pick_source: pickSource ?? 'unknown' },
+      });
       setState('error');
-      setError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+      if (pickSource === 'camera') {
+        setError(
+          'No pudimos procesar la foto de tu documento. Intenta tomarla de nuevo o selecciona una desde tu galería.',
+        );
+      } else {
+        setError(extractApiError(err, 'Algo salió mal. Revisa tu conexión e intenta de nuevo.'));
+      }
     }
   }
 
